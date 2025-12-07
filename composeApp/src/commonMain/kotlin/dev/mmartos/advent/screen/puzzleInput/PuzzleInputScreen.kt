@@ -1,7 +1,5 @@
 package dev.mmartos.advent.screen.puzzleInput
 
-import advent_of_code_compose_2025.composeapp.generated.resources.Res
-import advent_of_code_compose_2025.composeapp.generated.resources.arrow_back_24px
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -17,8 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.mmartos.advent.models.DayDetails
-import dev.mmartos.advent.ui.Title
-import org.jetbrains.compose.resources.vectorResource
+import dev.mmartos.advent.ui.TopBar
 
 @Composable
 fun PuzzleInputScreen(
@@ -45,22 +42,10 @@ fun PuzzleInputScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = spacedBy(48.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = onBackClicked,
-                modifier = Modifier
-                    .size(56.dp)
-            ) {
-                Icon(
-                    imageVector = vectorResource(resource = Res.drawable.arrow_back_24px),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp)
-                )
-            }
-            Title(title = "${dayDetails.title} - Puzzle Input", modifier = Modifier.weight(1f))
-        }
+        TopBar(
+            title = "${dayDetails.title} - Puzzle Input",
+            onBackClicked = onBackClicked,
+        )
         Text(
             text = "Ensure that the text you enter here matches the format required for the puzzle of the selected day.",
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
@@ -68,7 +53,7 @@ fun PuzzleInputScreen(
         )
         OutlinedCard(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .weight(1f)
         ) {
             TextField(

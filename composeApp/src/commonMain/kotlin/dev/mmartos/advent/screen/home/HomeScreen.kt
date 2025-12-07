@@ -1,4 +1,4 @@
-package dev.mmartos.advent.screen.main
+package dev.mmartos.advent.screen.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
