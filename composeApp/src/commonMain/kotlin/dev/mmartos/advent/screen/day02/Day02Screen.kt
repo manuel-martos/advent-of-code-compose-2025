@@ -1,21 +1,18 @@
-package dev.mmartos.advent.screen.day01
+package dev.mmartos.advent.screen.day02
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,37 +29,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
-import dev.mmartos.advent.theme.AoCTheme
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun Day01Screen(
+fun Day02Screen(
     dayDetails: DayDetails,
     puzzleInput: PersistentList<String>,
     onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val vm: Day01ViewModel = koinViewModel()
+    val vm: Day02ViewModel = koinViewModel()
     val uiState by vm.uiState.collectAsState()
     val scrollState = rememberScrollState()
     LaunchedEffect(puzzleInput) {
@@ -86,7 +70,7 @@ fun Day01Screen(
         }
         Row(
             horizontalArrangement = spacedBy(48.dp),
-            modifier = Modifier.fillMaxWidth().height(480.dp),
+            modifier = Modifier.fillMaxWidth().height(320.dp),
         ) {
             var hasScrolled by remember { mutableStateOf(false) }
             uiState.solverStage1?.run {
@@ -161,9 +145,9 @@ private fun ParsingContent(
             Row(
                 horizontalArrangement = spacedBy(8.dp)
             ) {
-                Text("Current line:", style = MaterialTheme.typography.bodyLarge)
+                Text("Current item:", style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    parserStage.currentLine,
+                    parserStage.currentItem,
                     style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
                     modifier = Modifier
                         .weight(1f)
@@ -172,8 +156,8 @@ private fun ParsingContent(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            DialMovements(
-                dialMovements = parserStage.dialMovements,
+            ProductIDRanges(
+                productIDRanges = parserStage.productIDRanges,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -185,8 +169,8 @@ private fun ParsedContent(
     parserStage: ParserStage.Parsed,
     modifier: Modifier = Modifier
 ) {
-    DialMovements(
-        dialMovements = parserStage.dialMovements,
+    ProductIDRanges(
+        productIDRanges = parserStage.productIDRanges,
         modifier = modifier.fillMaxSize(),
     )
 }
@@ -209,8 +193,8 @@ private fun ParserStage.resolveSectionTitle(): String =
     }
 
 @Composable
-private fun DialMovements(
-    dialMovements: PersistentList<DialMovement>,
+private fun ProductIDRanges(
+    productIDRanges: PersistentList<LongRange>,
     modifier: Modifier = Modifier,
 ) {
     val lazyGridState = rememberLazyGridState()
@@ -218,27 +202,31 @@ private fun DialMovements(
         modifier = modifier,
         verticalArrangement = spacedBy(8.dp)
     ) {
-        Text("Dial Movements")
+        Text("Product ID Ranges")
         LazyVerticalGrid(
-            columns = GridCells.Fixed(9),
+            columns = GridCells.Fixed(2),
             state = lazyGridState,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .padding(horizontal = 4.dp),
         ) {
-            items(dialMovements) {
+            itemsIndexed(productIDRanges) { index, range ->
                 Text(
-                    text = it.toString(),
+                    text = range.resolve(index),
                     style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
                 )
             }
         }
-        LaunchedEffect(dialMovements) {
-            lazyGridState.scrollToItem(dialMovements.size - 1)
+        LaunchedEffect(productIDRanges) {
+            lazyGridState.scrollToItem(productIDRanges.size - 1)
         }
     }
 }
+
+private fun LongRange.resolve(index: Int): String =
+    "Range ${String.format("%02d", index + 1)}: $this"
+
 
 @Composable
 private fun Solver1Section(
@@ -251,44 +239,24 @@ private fun Solver1Section(
         modifier = modifier
             .fillMaxSize(),
     ) {
-        val markerPosition = remember { Animatable(50f) }
-        val currentDialMovement = (solverStage as? SolverStage1.Solving)?.currentDialMovement
-        val currentDialerState = (solverStage as? SolverStage1.Solving)?.currentDialerState
-            ?: (solverStage as? SolverStage1.Solved)?.currentDialerState
-            ?: DialerState(currentValue = 50)
+        val currentRange = (solverStage as? SolverStage1.Solving)?.currentRange
         val currentSolution = (solverStage as? SolverStage1.Solving)?.partialSolution
             ?: (solverStage as? SolverStage1.Solved)?.solution
             ?: "Unknown"
-        val targetValue = if (currentDialMovement != null) {
-            (currentDialerState.currentValue + currentDialMovement.effectiveMovement())
-        } else {
-            currentDialerState.currentValue
-        }
-        if (currentDialMovement != null) {
-            DialMovement(
-                currentDialMovement,
+        if (currentRange != null) {
+            ProductIDRange(
+                productIDRange = currentRange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
             )
         }
-        LaunchedEffect(solverStage) {
-            markerPosition.snapTo(
-                targetValue = targetValue.toFloat(),
-            )
-        }
-        Dialer(
-            markerPosition = markerPosition.value,
-            modifier = Modifier
-                .weight(1f)
-                .aspectRatio(ratio = 1f, matchHeightConstraintsFirst = true)
-                .align(Alignment.CenterHorizontally),
-        )
         Solution(
             currentSolution,
             partial = solverStage is SolverStage1.Solving,
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
                 .align(Alignment.CenterHorizontally),
         )
     }
@@ -320,44 +288,24 @@ private fun Solver2Section(
         modifier = modifier
             .fillMaxSize(),
     ) {
-        val markerPosition = remember { Animatable(50f) }
-        val currentDialMovement = (solverStage as? SolverStage2.Solving)?.currentDialMovement
-        val currentDialerState = (solverStage as? SolverStage2.Solving)?.currentDialerState
-            ?: (solverStage as? SolverStage2.Solved)?.currentDialerState
-            ?: DialerState(currentValue = 50)
+        val currentRange = (solverStage as? SolverStage2.Solving)?.currentRange
         val currentSolution = (solverStage as? SolverStage2.Solving)?.partialSolution
             ?: (solverStage as? SolverStage2.Solved)?.solution
             ?: "Unknown"
-        val targetValue = if (currentDialMovement != null) {
-            (currentDialerState.currentValue + currentDialMovement.effectiveMovement())
-        } else {
-            currentDialerState.currentValue
-        }
-        if (currentDialMovement != null) {
-            DialMovement(
-                currentDialMovement,
+        if (currentRange != null) {
+            ProductIDRange(
+                productIDRange = currentRange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
             )
         }
-        LaunchedEffect(solverStage) {
-            markerPosition.snapTo(
-                targetValue = targetValue.toFloat(),
-            )
-        }
-        Dialer(
-            markerPosition = markerPosition.value,
-            modifier = Modifier
-                .weight(1f)
-                .aspectRatio(ratio = 1f, matchHeightConstraintsFirst = true)
-                .align(Alignment.CenterHorizontally),
-        )
         Solution(
             currentSolution,
             partial = solverStage is SolverStage2.Solving,
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
                 .align(Alignment.CenterHorizontally),
         )
     }
@@ -379,145 +327,8 @@ private fun SolverStage2.resolveSectionOutlineColor(): Color =
     }
 
 @Composable
-private fun Dialer(
-    markerPosition: Float,
-    modifier: Modifier = Modifier,
-) {
-    val tetMeasurer = rememberTextMeasurer()
-    val ringBrush = remember {
-        Brush.linearGradient(
-            0f to Color.White,
-            1f to Color.Gray,
-            end = Offset.Infinite.copy(x = 0f)
-        )
-    }
-    val markerBrush = remember {
-        Brush.radialGradient(
-            0.5f to Color.White,
-            1f to Color.Gray,
-        )
-    }
-    val dialerBrush = remember {
-        Brush.radialGradient(
-            0f to Color.White,
-            0.7f to Color.LightGray,
-            1f to Color.Gray,
-        )
-    }
-    Canvas(
-        modifier
-    ) {
-        // Dial Ring
-        val outerRingWidth = 0.1f * (size.minDimension / 2.0f)
-        val middleRingWidth = 0.025f * (size.minDimension / 2.0f)
-        val innerRingWidth = 0.05f * (size.minDimension / 2.0f)
-        val outerRingRadius = size.minDimension / 2.0f
-        val middleRingRadius = outerRingRadius - outerRingWidth
-        val innerRingRadius = middleRingRadius - middleRingWidth
-        drawCircle(
-            brush = ringBrush,
-            radius = outerRingRadius - outerRingWidth / 2f,
-            style = Stroke(outerRingWidth)
-        )
-        drawCircle(
-            color = Color.LightGray,
-            radius = middleRingRadius - middleRingWidth / 2f,
-            style = Stroke(middleRingWidth)
-        )
-        scale(scaleX = 1f, scaleY = -1f) {
-            drawCircle(
-                brush = ringBrush,
-                radius = innerRingRadius - innerRingWidth / 2f,
-                style = Stroke(innerRingWidth)
-            )
-        }
-
-        // Marker
-        val markerRadius = 0.02f * (size.minDimension / 2.0f)
-        translate(
-            top = -innerRingRadius + innerRingWidth / 2f,
-        ) {
-            scale(scaleX = markerRadius / (size.minDimension / 2f), scaleY = markerRadius / (size.minDimension / 2f)) {
-                drawCircle(
-                    brush = markerBrush,
-                )
-            }
-        }
-
-        // Dialer Gap
-        val dialerGapWidth = 0.0125f * (size.minDimension / 2.0f)
-        val dialerGapRadius = innerRingRadius - innerRingWidth
-        drawCircle(
-            color = Color.Black,
-            radius = dialerGapRadius - dialerGapWidth / 2f,
-            style = Stroke(dialerGapWidth)
-        )
-
-        // Dialer
-        val dialerRadius = dialerGapRadius - dialerGapWidth
-        drawCircle(
-            brush = dialerBrush,
-            radius = dialerRadius,
-        )
-
-        // Dialer Markers
-        rotate(markerPosition / 100f * 360f) {
-            val dialerMarkerRadius = dialerRadius - 0.025f * (size.minDimension / 2.0f)
-            repeat(100) {
-                val drawTextMarker = it % 5 == 0
-                val zeroMarker = it == 0
-                val curMarkerLength =
-                    if (drawTextMarker) 0.1f * (size.minDimension / 2) else 0.025f * (size.minDimension / 2)
-                translate(
-                    size.center.x, size.center.y,
-                ) {
-                    rotate(
-                        degrees = -it * 360 / 100f,
-                        pivot = Offset.Zero
-                    ) {
-                        translate(
-                            0f, -dialerMarkerRadius,
-                        ) {
-                            drawLine(
-                                color = Color.Gray,
-                                start = Offset.Zero,
-                                end = Offset(0f, curMarkerLength),
-                                strokeWidth = 3f * density,
-                            )
-                            drawLine(
-                                color = Color.DarkGray,
-                                start = Offset.Zero,
-                                end = Offset(0f, curMarkerLength),
-                                strokeWidth = 1f * density,
-                            )
-
-                            if (drawTextMarker) {
-                                val textStyle =
-                                    if (zeroMarker) TextStyle.Default.copy(fontWeight = FontWeight.Bold) else TextStyle.Default
-                                val textLayoutResult = tetMeasurer.measure(
-                                    text = "$it",
-                                    style = textStyle
-                                )
-                                textLayoutResult.size
-                                drawText(
-                                    textLayoutResult,
-                                    topLeft = Offset(
-                                        -textLayoutResult.size.width / 2f,
-                                        curMarkerLength + dialerGapWidth
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DialMovement(
-    dialMovement: DialMovement,
+private fun ProductIDRange(
+    productIDRange: LongRange,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -526,25 +337,18 @@ private fun DialMovement(
         modifier = modifier,
     ) {
         Text(
-            text = "Current Movement:",
+            text = "Range:",
             style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
         )
         Row(
             horizontalArrangement = spacedBy(8.dp, Alignment.CenterHorizontally),
             modifier = Modifier
-                .width(160.dp)
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
                 .padding(8.dp)
         ) {
             Text(
-                text = dialMovement.direction.toEmoji(),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    color = Color.White,
-                    fontFamily = FontFamily.Monospace
-                ),
-            )
-            Text(
-                text = dialMovement.steps.toString(),
+                text = productIDRange.toString(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = Color.White,
                     fontFamily = FontFamily.Monospace
@@ -560,9 +364,9 @@ private fun Solution(
     partial: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        horizontalArrangement = spacedBy(16.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
         modifier = modifier,
     ) {
         Text(
@@ -571,47 +375,15 @@ private fun Solution(
         )
         Text(
             text = solution,
-            style = MaterialTheme.typography.titleLarge.copy(
+            style = MaterialTheme.typography.displayLarge.copy(
                 color = Color.White,
                 fontFamily = FontFamily.Monospace,
                 textAlign = TextAlign.Center,
             ),
             modifier = Modifier
-                .width(160.dp)
+                .widthIn(160.dp)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
                 .padding(8.dp)
         )
-    }
-}
-
-@Preview
-@Composable
-fun DialerPreview() {
-    AoCTheme {
-        Dialer(
-            markerPosition = 50f,
-            modifier = Modifier.fillMaxSize().background(Color.Black),
-        )
-    }
-}
-
-
-@Preview
-@Composable
-fun DialMovementPreview() {
-    AoCTheme {
-        Column(
-            modifier = Modifier.fillMaxSize().background(Color.Black),
-            verticalArrangement = spacedBy(16.dp),
-        ) {
-            DialMovement(
-                dialMovement = DialMovement(Direction.Left, 88),
-                modifier = Modifier.fillMaxWidth().background(Color.Black),
-            )
-            DialMovement(
-                dialMovement = DialMovement(Direction.Right, 77),
-                modifier = Modifier.fillMaxWidth().background(Color.Black),
-            )
-        }
     }
 }

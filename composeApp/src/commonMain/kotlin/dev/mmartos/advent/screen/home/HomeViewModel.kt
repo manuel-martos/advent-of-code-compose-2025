@@ -13,6 +13,11 @@ class HomeViewModel : ViewModel() {
             5 -> DayDetails(day, "Day 5: Cafeteria")
             6 -> DayDetails(day, "Day 6: Trash Compactor")
             7 -> DayDetails(day, "Day 7: Laboratories")
+            8 -> DayDetails(day, "Day 8: Playground")
+            9 -> DayDetails(day, "Day 9: Movie Theater")
+            10 -> DayDetails(day, "Day 10: Factory")
+            11 -> DayDetails(day, "Day 11: Reactor")
+            12 -> DayDetails(day, "Day 12: Christmas Tree Farm")
             else -> error("Not ready yet")
         }
 }

@@ -5,8 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -18,6 +27,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.screen.day01.Day01Screen
+import dev.mmartos.advent.screen.day02.Day02Screen
 import dev.mmartos.advent.screen.puzzleInput.PuzzleKey.PuzzleInputKey
 import dev.mmartos.advent.screen.puzzleInput.PuzzleKey.SolvePuzzleKey
 import dev.mmartos.advent.ui.SectionContainer
@@ -55,11 +65,20 @@ fun PuzzleScreen(
                     }
 
                     is SolvePuzzleKey -> NavEntry(key = key) {
-                        Day01Screen(
-                            dayDetails = dayDetails,
-                            puzzleInput = key.data,
-                            onBackClicked = onBackClicked,
-                        )
+                        when (dayDetails.day) {
+                            1 ->
+                                Day01Screen(
+                                    dayDetails = dayDetails,
+                                    puzzleInput = key.data,
+                                    onBackClicked = onBackClicked,
+                                )
+                            2 ->
+                                Day02Screen(
+                                    dayDetails = dayDetails,
+                                    puzzleInput = key.data,
+                                    onBackClicked = onBackClicked,
+                                )
+                        }
                     }
                 }
             }

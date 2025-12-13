@@ -3,11 +3,11 @@ package dev.mmartos.advent.screen.day01
 import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
+import kotlin.math.abs
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
-import kotlin.math.abs
 
 sealed class Direction {
     data object Left : Direction()
@@ -19,7 +19,6 @@ sealed class Direction {
             Right -> "↻"
         }
 }
-
 
 data class DialMovement(
     val direction: Direction,
@@ -102,7 +101,7 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
                         )
                     )
                 }
-                delay(2)
+                delay(1)
             }
         }.onFailure {
             _uiState.update {
