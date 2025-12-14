@@ -45,11 +45,12 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.theme.AoCTheme
 import dev.mmartos.advent.ui.SectionContainer
+import dev.mmartos.advent.ui.Solution
+import dev.mmartos.advent.ui.SolutionLayout
 import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -285,8 +286,10 @@ private fun Solver1Section(
                 .align(Alignment.CenterHorizontally),
         )
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage1.Solving,
+            layout = SolutionLayout.Horizontal,
+            solutionTextStyle = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
@@ -354,8 +357,10 @@ private fun Solver2Section(
                 .align(Alignment.CenterHorizontally),
         )
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage2.Solving,
+            layout = SolutionLayout.Horizontal,
+            solutionTextStyle = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
@@ -554,36 +559,6 @@ private fun DialMovement(
     }
 }
 
-@Composable
-private fun Solution(
-    solution: String,
-    partial: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        horizontalArrangement = spacedBy(16.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        Text(
-            text = if (partial) "Current Solution:" else "Final Solution:",
-            style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-        )
-        Text(
-            text = solution,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = Color.White,
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
-            ),
-            modifier = Modifier
-                .width(160.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        )
-    }
-}
-
 @Preview
 @Composable
 fun DialerPreview() {
@@ -594,7 +569,6 @@ fun DialerPreview() {
         )
     }
 }
-
 
 @Preview
 @Composable
