@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -31,10 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.ui.SectionContainer
+import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
 import org.koin.compose.viewmodel.koinViewModel
@@ -252,8 +251,9 @@ private fun Solver1Section(
             )
         }
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage1.Solving,
+            solutionTextStyle = MaterialTheme.typography.displayLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -301,8 +301,9 @@ private fun Solver2Section(
             )
         }
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage2.Solving,
+            solutionTextStyle = MaterialTheme.typography.displayLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -355,35 +356,5 @@ private fun ProductIDRange(
                 ),
             )
         }
-    }
-}
-
-@Composable
-private fun Solution(
-    solution: String,
-    partial: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
-        modifier = modifier,
-    ) {
-        Text(
-            text = if (partial) "Current Solution:" else "Final Solution:",
-            style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-        )
-        Text(
-            text = solution,
-            style = MaterialTheme.typography.displayLarge.copy(
-                color = Color.White,
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
-            ),
-            modifier = Modifier
-                .widthIn(160.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        )
     }
 }
