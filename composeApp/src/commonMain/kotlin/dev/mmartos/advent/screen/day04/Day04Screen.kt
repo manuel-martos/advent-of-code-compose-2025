@@ -364,25 +364,6 @@ private fun PaperRollMapContent(
     }
 }
 
-//@Composable
-//@ReadOnlyComposable
-//private fun SolvedBatteriesBank.resolve(): AnnotatedString =
-//    buildAnnotatedString {
-//        val highlightStyle = SpanStyle(
-//            background = Color.White,
-//            color = Color.Black,
-//        )
-//        batteriesBank.forEachIndexed { index, ch ->
-//            if (selectedBatteries.contains(index)) {
-//                withStyle(highlightStyle) {
-//                    append(ch)
-//                }
-//            } else {
-//                append(ch)
-//            }
-//        }
-//    }
-
 @Composable
 private fun Solution(
     solution: String,

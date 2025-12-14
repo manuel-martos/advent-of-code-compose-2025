@@ -232,10 +232,6 @@ private fun BatteriesBanks(
     }
 }
 
-//private fun LongRange.resolve(index: Int): String =
-//    "Range ${String.format("%02d", index + 1)}: $this"
-//
-//
 @Composable
 private fun Solver1Section(
     solverStage: SolverStage1,
