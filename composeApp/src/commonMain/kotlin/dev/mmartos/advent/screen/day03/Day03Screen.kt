@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.ui.SectionContainer
+import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -263,8 +264,9 @@ private fun Solver1Section(
                 .align(Alignment.CenterHorizontally),
         )
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage1.Solving,
+            solutionTextStyle = MaterialTheme.typography.displayMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
@@ -318,8 +320,9 @@ private fun Solver2Section(
                 .align(Alignment.CenterHorizontally),
         )
         Solution(
-            currentSolution,
+            solution = currentSolution,
             partial = solverStage is SolverStage2.Solving,
+            solutionTextStyle = MaterialTheme.typography.displayMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally),
@@ -410,33 +413,3 @@ private fun SolvedBatteriesBank.resolve(): AnnotatedString =
             }
         }
     }
-
-@Composable
-private fun Solution(
-    solution: String,
-    partial: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
-        modifier = modifier,
-    ) {
-        Text(
-            text = if (partial) "Current Solution:" else "Final Solution:",
-            style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-        )
-        Text(
-            text = solution,
-            style = MaterialTheme.typography.displayMedium.copy(
-                color = Color.White,
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
-            ),
-            modifier = Modifier
-                .widthIn(160.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        )
-    }
-}
