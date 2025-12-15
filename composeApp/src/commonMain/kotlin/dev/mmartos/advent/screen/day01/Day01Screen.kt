@@ -48,6 +48,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.theme.AoCTheme
+import dev.mmartos.advent.ui.CurrentElement
+import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
@@ -159,19 +161,11 @@ private fun ParsingContent(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                horizontalArrangement = spacedBy(8.dp)
-            ) {
-                Text("Current line:", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    parserStage.currentLine,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 4.dp),
-                )
-            }
+            CurrentElement(
+                title = "Current line:",
+                currentItem = parserStage.currentLine,
+                layout = CurrentElementLayout.Horizontal,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             DialMovements(
                 dialMovements = parserStage.dialMovements,

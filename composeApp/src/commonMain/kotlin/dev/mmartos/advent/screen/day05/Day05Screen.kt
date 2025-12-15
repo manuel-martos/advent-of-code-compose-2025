@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.CurrentElement
+import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
@@ -147,23 +149,11 @@ private fun ParsingContent(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                verticalArrangement = spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Current line:",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    parserStage.currentLine,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 4.dp),
-                )
-            }
+            CurrentElement(
+                title = "Current line:",
+                currentItem = parserStage.currentLine,
+                layout = CurrentElementLayout.Horizontal,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             IngredientsDatabaseContent(
                 database = parserStage.partialDatabase,

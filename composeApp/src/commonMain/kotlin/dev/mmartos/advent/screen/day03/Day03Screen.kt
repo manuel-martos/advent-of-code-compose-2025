@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -40,6 +39,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.CurrentElement
+import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.TopBar
@@ -151,19 +152,11 @@ private fun ParsingContent(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                verticalArrangement = spacedBy(8.dp)
-            ) {
-                Text("Current line:", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    parserStage.currentLine,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 4.dp),
-                )
-            }
+            CurrentElement(
+                title = "Current line:",
+                currentItem = parserStage.currentLine,
+                layout = CurrentElementLayout.Vertical,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             BatteriesBanks(
                 batteriesBanks = parserStage.batteriesBanks,

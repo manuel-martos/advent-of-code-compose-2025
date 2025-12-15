@@ -32,6 +32,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.CurrentElement
+import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.TopBar
@@ -141,19 +143,11 @@ private fun ParsingContent(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                horizontalArrangement = spacedBy(8.dp)
-            ) {
-                Text("Current item:", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    parserStage.currentItem,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 4.dp),
-                )
-            }
+            CurrentElement(
+                title = "Current item:",
+                currentItem = parserStage.currentItem,
+                layout = CurrentElementLayout.Horizontal,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             ProductIDRanges(
                 productIDRanges = parserStage.productIDRanges,

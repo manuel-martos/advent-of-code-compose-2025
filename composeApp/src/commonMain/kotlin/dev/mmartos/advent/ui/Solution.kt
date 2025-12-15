@@ -29,8 +29,8 @@ enum class SolutionLayout {
 fun Solution(
     solution: String,
     partial: Boolean,
-    layout: SolutionLayout = SolutionLayout.Vertical,
     modifier: Modifier = Modifier,
+    layout: SolutionLayout = SolutionLayout.Vertical,
     solutionTextStyle: TextStyle = MaterialTheme.typography.displaySmall
 ) {
     when (layout) {
