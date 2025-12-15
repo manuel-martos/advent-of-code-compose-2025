@@ -39,6 +39,7 @@ import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
 import dev.mmartos.advent.ui.TopBar
+import kotlin.math.min
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.compose.viewmodel.koinViewModel
@@ -349,7 +350,12 @@ private fun PaperRollMapContent(
     Canvas(
         modifier = modifier
     ) {
-        val cellSize = Size(size.width / paperRollMap.cols, size.height / paperRollMap.rows)
+        val minCellSize = min(size.width / paperRollMap.cols, size.height / paperRollMap.rows)
+        val cellSize = Size(minCellSize, minCellSize)
+        val offset = Offset(
+            x = (size.width - (minCellSize * paperRollMap.cols)) / 2,
+            y = (size.height - (minCellSize * paperRollMap.rows)) / 2,
+        )
         paperRollMap.content.indices.forEach { row ->
             paperRollMap.content[row].indices.forEach { col ->
                 val color = when {
@@ -357,7 +363,7 @@ private fun PaperRollMapContent(
                     highlightedCells.contains(Pair(row, col)) -> Color.White
                     else -> Color.White.copy(alpha = 0.5f)
                 }
-                val topLeft = Offset(col * cellSize.width, row * cellSize.height)
+                val topLeft = offset + Offset(col * cellSize.width, row * cellSize.height)
                 drawRect(
                     color = color,
                     topLeft = topLeft,
