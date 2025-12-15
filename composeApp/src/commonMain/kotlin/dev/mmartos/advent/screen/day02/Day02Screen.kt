@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -32,12 +28,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.AutoScrollingTitledList
+import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -190,31 +189,18 @@ private fun ProductIDRanges(
     productIDRanges: PersistentList<LongRange>,
     modifier: Modifier = Modifier,
 ) {
-    val lazyGridState = rememberLazyGridState()
-    Column(
+    AutoScrollingTitledList(
+        items = productIDRanges.withIndex().toPersistentList(),
+        layout = AutoScrollingTitledListLayout.GridLayoutTitled(columns = 2),
         modifier = modifier,
-        verticalArrangement = spacedBy(8.dp)
-    ) {
-        Text("Product ID Ranges")
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = lazyGridState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(horizontal = 4.dp),
-        ) {
-            itemsIndexed(productIDRanges) { index, range ->
-                Text(
-                    text = range.resolve(index),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                )
-            }
+        title = { Text("Product ID Ranges:") },
+        itemContent = { (index, range) ->
+            Text(
+                text = range.resolve(index),
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+            )
         }
-        LaunchedEffect(productIDRanges) {
-            lazyGridState.scrollToItem(productIDRanges.size - 1)
-        }
-    }
+    )
 }
 
 private fun LongRange.resolve(index: Int): String =

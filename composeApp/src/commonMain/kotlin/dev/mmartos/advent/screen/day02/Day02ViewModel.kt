@@ -69,7 +69,7 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                             )
                         )
                     }
-                    delay(10)
+                    delay(100)
                 }
         }.onFailure {
             _uiState.update {

@@ -1,6 +1,5 @@
 package dev.mmartos.advent.screen.day05
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,14 +8,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +28,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.AutoScrollingTitledList
+import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
@@ -217,39 +210,26 @@ private fun FreshIDRanges(
     freshIDRanges: PersistentList<LongRange>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(8.dp, Alignment.CenterVertically),
+    AutoScrollingTitledList(
+        items = freshIDRanges,
+        layout = AutoScrollingTitledListLayout.ListTitled,
         modifier = modifier,
-    ) {
-        val lazyListState = rememberLazyListState()
-        Text(
-            text = "Fresh ID Ranges:",
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        ) {
-            items(freshIDRanges) {
-                Text(
-                    text = it.toString(),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                )
-            }
+        title = {
+            Text(
+                text = "Fresh ID Ranges:",
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+            )
+        },
+        itemContent = {
+            Text(
+                text = it.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = Color.White,
+                    fontFamily = FontFamily.Monospace
+                ),
+            )
         }
-        LaunchedEffect(freshIDRanges) {
-            lazyListState.scrollToItem(freshIDRanges.size - 1)
-        }
-    }
+    )
 }
 
 @Composable
@@ -257,43 +237,26 @@ private fun Ingredients(
     ingredients: PersistentList<Long>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(8.dp, Alignment.CenterVertically),
+    AutoScrollingTitledList(
+        items = ingredients,
+        layout = AutoScrollingTitledListLayout.GridLayoutTitled(columns = 2),
         modifier = modifier,
-    ) {
-        val lazyGridState = rememberLazyGridState()
-        Text(
-            text = "Ingredients:",
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = lazyGridState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        ) {
-            items(ingredients) {
-                Text(
-                    text = it.toString(),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                )
-            }
+        title = {
+            Text(
+                text = "Ingredients:",
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+            )
+        },
+        itemContent = {
+            Text(
+                text = it.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = Color.White,
+                    fontFamily = FontFamily.Monospace
+                ),
+            )
         }
-        LaunchedEffect(ingredients) {
-            if (ingredients.isNotEmpty()) {
-                lazyGridState.scrollToItem(ingredients.size - 1)
-            }
-        }
-    }
+    )
 }
 
 @Composable
@@ -398,47 +361,30 @@ private fun VerifiedIngredientsContent(
     verifiedIngredients: PersistentList<IngredientState>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(8.dp, Alignment.CenterVertically),
+    AutoScrollingTitledList(
+        items = verifiedIngredients,
+        layout = AutoScrollingTitledListLayout.GridLayoutTitled(columns = 2),
         modifier = modifier,
-    ) {
-        val lazyGridState = rememberLazyGridState()
-        Text(
-            text = "Verified Ingredients:",
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = lazyGridState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        ) {
-            items(verifiedIngredients) {
-                val emoji = if (it.isFresh) "✅" else "\uD83D\uDEA8"
-                val color = if (it.isFresh) Color.White else Color.Red
-                val fontWeight = if (it.isFresh) FontWeight.Normal else FontWeight.Bold
-                Text(
-                    text = "$emoji -> ${it.ingredientId}",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = color,
-                        fontWeight = fontWeight,
-                    ),
-                )
-            }
+        title = {
+            Text(
+                text = "Verified Ingredients:",
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+            )
+        },
+        itemContent = {
+            val emoji = if (it.isFresh) "✅" else "\uD83D\uDEA8"
+            val color = if (it.isFresh) Color.White else Color.Red
+            val fontWeight = if (it.isFresh) FontWeight.Normal else FontWeight.Bold
+            Text(
+                text = "$emoji -> ${it.ingredientId}",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = FontFamily.Monospace,
+                    color = color,
+                    fontWeight = fontWeight,
+                ),
+            )
         }
-        LaunchedEffect(verifiedIngredients) {
-            if (verifiedIngredients.isNotEmpty()) {
-                lazyGridState.scrollToItem(verifiedIngredients.size - 1)
-            }
-        }
-    }
+    )
 }
 
 @Composable
@@ -446,39 +392,25 @@ private fun VerifiedFreshIDs(
     verifiedFreshIDs: PersistentList<LongRange>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(8.dp, Alignment.CenterVertically),
+    AutoScrollingTitledList(
+        items = verifiedFreshIDs,
+        layout = AutoScrollingTitledListLayout.ListTitled,
         modifier = modifier,
-    ) {
-        val lazyListState = rememberLazyListState()
-        Text(
-            text = "Verified Fresh ID Ranges:",
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
-                .padding(8.dp)
-        ) {
-            items(verifiedFreshIDs) {
-                Text(
-                    text = it.toString(),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                )
-            }
+        title = {
+            Text(
+                text = "Verified Fresh ID Ranges:",
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth(),
+            )
+        },
+        itemContent = {
+            Text(
+                text = it.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = FontFamily.Monospace,
+                ),
+            )
         }
-        LaunchedEffect(verifiedFreshIDs) {
-            if (verifiedFreshIDs.isNotEmpty()) {
-                lazyListState.scrollToItem(verifiedFreshIDs.size - 1)
-            }
-        }
-    }
+    )
 }

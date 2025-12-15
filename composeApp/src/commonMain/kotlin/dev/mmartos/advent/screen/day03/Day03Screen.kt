@@ -1,7 +1,5 @@
 package dev.mmartos.advent.screen.day03
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +33,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.mmartos.advent.models.DayDetails
+import dev.mmartos.advent.ui.AutoScrollingTitledList
+import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
@@ -199,31 +195,18 @@ private fun BatteriesBanks(
     batteriesBanks: PersistentList<String>,
     modifier: Modifier = Modifier,
 ) {
-    val lazyListState = rememberLazyListState()
-    Column(
+    AutoScrollingTitledList(
+        items = batteriesBanks,
+        layout = AutoScrollingTitledListLayout.ListTitled,
         modifier = modifier,
-        verticalArrangement = spacedBy(8.dp)
-    ) {
-        Text("Batteries Banks")
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(horizontal = 4.dp),
-        ) {
-            items(batteriesBanks) { batteriesBank ->
-                Text(
-                    text = batteriesBank,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                )
-            }
+        title = { Text("Batteries Banks") },
+        itemContent = {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+            )
         }
-        LaunchedEffect(batteriesBanks) {
-            lazyListState.scrollToItem(batteriesBanks.size - 1)
-        }
-    }
+    )
 }
 
 @Composable
@@ -343,49 +326,34 @@ private fun SolvedBatteriesBanks(
     solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
+    AutoScrollingTitledList(
+        items = solvedBatteriesBanks,
+        layout = AutoScrollingTitledListLayout.ListTitled,
         modifier = modifier,
-    ) {
-        val lazyListState = rememberLazyListState()
-        Text(
-            text = "Solved Batteries Bank:",
-            style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-        )
-        LazyColumn(
-            state = lazyListState,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.surfaceContainerHighest,
-                    shape = MaterialTheme.shapes.medium
-                )
-                .padding(8.dp),
-        ) {
-            items(solvedBatteriesBanks) { solvedBatteriesBank ->
-                Text(
-                    text = solvedBatteriesBank.resolve(),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        lineHeight = 12.sp,
-                    ),
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 1.sp,
-                        maxFontSize = 12.sp,
-                    ),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                )
-            }
-        }
-        LaunchedEffect(solvedBatteriesBanks) {
-            lazyListState.scrollToItem(solvedBatteriesBanks.size - 1)
-        }
-    }
+        title = {
+            Text(
+                text = "Solved Batteries Bank:",
+                style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
+            )
+        },
+        itemContent = {
+            Text(
+                text = it.resolve(),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                ),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 1.sp,
+                    maxFontSize = 12.sp,
+                ),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+        },
+    )
 }
 
 @Composable

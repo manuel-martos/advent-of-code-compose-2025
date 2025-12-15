@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +44,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.theme.AoCTheme
+import dev.mmartos.advent.ui.AutoScrollingTitledList
+import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.SectionContainer
@@ -208,31 +206,18 @@ private fun DialMovements(
     dialMovements: PersistentList<DialMovement>,
     modifier: Modifier = Modifier,
 ) {
-    val lazyGridState = rememberLazyGridState()
-    Column(
+    AutoScrollingTitledList(
+        items = dialMovements,
+        layout = AutoScrollingTitledListLayout.GridLayoutTitled(columns = 9),
         modifier = modifier,
-        verticalArrangement = spacedBy(8.dp)
-    ) {
-        Text("Dial Movements")
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(9),
-            state = lazyGridState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .padding(horizontal = 4.dp),
-        ) {
-            items(dialMovements) {
-                Text(
-                    text = it.toString(),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-                )
-            }
+        title = { Text("Dial Movements:") },
+        itemContent = { item ->
+            Text(
+                text = item.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+            )
         }
-        LaunchedEffect(dialMovements) {
-            lazyGridState.scrollToItem(dialMovements.size - 1)
-        }
-    }
+    )
 }
 
 @Composable
