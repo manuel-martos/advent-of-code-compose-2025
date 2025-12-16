@@ -68,7 +68,7 @@ private fun <T> AutoScrollingTitledList(
         title.invoke()
         LazyColumn(
             state = lazyListState,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.small)
                 .padding(8.dp)
@@ -100,7 +100,7 @@ private fun <T> AutoScrollingTitledGrid(
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             state = lazyGridState,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.small)
                 .padding(8.dp)
