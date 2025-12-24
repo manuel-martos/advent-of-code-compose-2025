@@ -1,5 +1,6 @@
 package dev.mmartos.advent.common
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,11 +47,14 @@ abstract class BaseViewModel<PS, PD, SS1, SS2>(
     }
 }
 
+@Immutable
 data class UiState<PS, SS1, SS2>(
     val parserStage: PS? = null,
     val solverStage1: SS1? = null,
     val solverStage2: SS2? = null,
 ) {
+    fun isSolving(): Boolean = solverStage1 != null || solverStage2 != null
+
     companion object {
         fun <PS, SS1, SS2> initialState() = UiState<PS, SS1, SS2>()
     }
