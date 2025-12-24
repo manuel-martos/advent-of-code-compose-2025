@@ -45,7 +45,7 @@ fun <PS, SS1, SS2> DayScaffold(
         modifier = modifier
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(48.dp),
+        verticalArrangement = spacedBy(32.dp),
     ) {
         TopBar(
             title = "${dayDetails.title} - Solver",
@@ -56,7 +56,7 @@ fun <PS, SS1, SS2> DayScaffold(
         }
         if (uiState.isSolving()) {
             Row(
-                horizontalArrangement = spacedBy(48.dp),
+                horizontalArrangement = spacedBy(32.dp),
                 modifier = Modifier.fillMaxWidth().height(solvingHeight),
             ) {
                 var hasScrolled by remember { mutableStateOf(false) }

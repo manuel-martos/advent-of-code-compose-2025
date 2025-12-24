@@ -52,6 +52,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
+@Suppress("DuplicatedCode")
 fun Day01Screen(
     dayDetails: DayDetails,
     puzzleInput: PersistentList<String>,

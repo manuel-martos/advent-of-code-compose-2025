@@ -7,20 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,15 +30,16 @@ import dev.mmartos.advent.ui.AutoScrollingTitledList
 import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
+import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
-import dev.mmartos.advent.ui.TopBar
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
+@Suppress("DuplicatedCode")
 fun Day03Screen(
     dayDetails: DayDetails,
     puzzleInput: PersistentList<String>,
@@ -54,56 +48,35 @@ fun Day03Screen(
 ) {
     val vm: Day03ViewModel = koinViewModel()
     val uiState by vm.uiState.collectAsState()
-    val scrollState = rememberScrollState()
-    LaunchedEffect(puzzleInput) {
-        vm.startParser(puzzleInput)
-    }
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(48.dp),
-    ) {
-        TopBar(
-            title = "${dayDetails.title} - Solver",
-            onBackClicked = onBackClicked,
-        )
-        uiState.parserStage?.run {
+    DayScaffold(
+        dayDetails = dayDetails,
+        puzzleInput = puzzleInput,
+        uiState = uiState,
+        onStart = { input -> vm.startParser(input) },
+        onBackClicked = onBackClicked,
+        onDispose = { vm.stop() },
+        parsingContent = { parserStage, modifier ->
             ParserSection(
-                parserStage = this,
-                modifier = Modifier.height(360.dp),
+                parserStage = parserStage,
+                modifier = modifier,
             )
-        }
-        Row(
-            horizontalArrangement = spacedBy(48.dp),
-            modifier = Modifier.fillMaxWidth().height(480.dp),
-        ) {
-            var hasScrolled by remember { mutableStateOf(false) }
-            uiState.solverStage1?.run {
-                Solver1Section(
-                    solverStage = this,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            uiState.solverStage2?.run {
-                Solver2Section(
-                    solverStage = this,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            LaunchedEffect(uiState.solverStage1, uiState.solverStage2) {
-                if (!hasScrolled && uiState.solverStage1 != null && uiState.solverStage2 != null) {
-                    hasScrolled = true
-                    scrollState.scrollTo(scrollState.maxValue)
-                }
-            }
-        }
-    }
-    DisposableEffect(puzzleInput) {
-        onDispose {
-            vm.stop()
-        }
-    }
+        },
+        solvingContent1 = { solverStage, modifier ->
+            Solver1Section(
+                solverStage = solverStage,
+                modifier = modifier,
+            )
+        },
+        solvingContent2 = { solverStage, modifier ->
+            Solver2Section(
+                solverStage = solverStage,
+                modifier = modifier,
+            )
+        },
+        modifier = modifier,
+        parsingHeight = 360.dp,
+        solvingHeight = 480.dp,
+    )
 }
 
 @Composable
