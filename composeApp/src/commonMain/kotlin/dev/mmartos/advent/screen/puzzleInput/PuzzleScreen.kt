@@ -35,6 +35,7 @@ import dev.mmartos.advent.screen.day04.Day04Screen
 import dev.mmartos.advent.screen.day05.Day05Screen
 import dev.mmartos.advent.screen.day06.Day06Screen
 import dev.mmartos.advent.screen.day07.Day07Screen
+import dev.mmartos.advent.screen.day08.Day08Screen
 import dev.mmartos.advent.screen.puzzleInput.PuzzleKey.PuzzleInputKey
 import dev.mmartos.advent.screen.puzzleInput.PuzzleKey.SolvePuzzleKey
 import dev.mmartos.advent.ui.SectionContainer
@@ -117,6 +118,13 @@ fun PuzzleScreen(
 
                             7 ->
                                 Day07Screen(
+                                    dayDetails = dayDetails,
+                                    puzzleInput = key.data,
+                                    onBackClicked = onBackClicked,
+                                )
+
+                            8 ->
+                                Day08Screen(
                                     dayDetails = dayDetails,
                                     puzzleInput = key.data,
                                     onBackClicked = onBackClicked,
