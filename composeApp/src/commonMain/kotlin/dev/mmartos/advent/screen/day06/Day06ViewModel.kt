@@ -1,6 +1,9 @@
 package dev.mmartos.advent.screen.day06
 
 import dev.mmartos.advent.common.BaseViewModel
+import dev.mmartos.advent.common.ErrorStage
+import dev.mmartos.advent.common.ParsedStage
+import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.screen.day06.MathOperator.Companion.toMathOperator
 import dev.mmartos.advent.utils.threadSafeUpdate
@@ -8,6 +11,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
+import dev.mmartos.advent.common.ParserStage as BaseParserStage
 
 enum class MathOperator {
     PLUS,
@@ -41,16 +45,16 @@ data class SolvedProblem(
     val solution: Long,
 )
 
-sealed class ParserStage {
+sealed class ParserStage : BaseParserStage {
     data class Parsing(
         val partialProblems: PersistentList<Problem>,
-    ) : ParserStage()
+    ) : ParserStage(), ParsingStage
 
     data class Parsed(
         val problems: PersistentList<Problem>,
-    ) : ParserStage()
+    ) : ParserStage(), ParsedStage
 
-    data object Error : ParserStage()
+    data object Error : ParserStage(), ErrorStage
 }
 
 sealed class SolverStage1 {

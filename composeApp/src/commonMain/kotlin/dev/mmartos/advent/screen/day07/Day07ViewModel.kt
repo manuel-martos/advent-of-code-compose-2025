@@ -2,6 +2,9 @@ package dev.mmartos.advent.screen.day07
 
 import androidx.compose.runtime.Immutable
 import dev.mmartos.advent.common.BaseViewModel
+import dev.mmartos.advent.common.ErrorStage
+import dev.mmartos.advent.common.ParsedStage
+import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlin.math.max
@@ -15,6 +18,7 @@ import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
+import dev.mmartos.advent.common.ParserStage as BaseParserStage
 
 @Immutable
 data class TachyonDiagram(
@@ -30,17 +34,17 @@ sealed class Timeline {
     data object SlipRight : Timeline()
 }
 
-sealed class ParserStage {
+sealed class ParserStage : BaseParserStage {
     data class Parsing(
         val currentLine: String,
         val partialTachyonDiagram: TachyonDiagram,
-    ) : ParserStage()
+    ) : ParserStage(), ParsingStage
 
     data class Parsed(
         val tachyonDiagram: TachyonDiagram,
-    ) : ParserStage()
+    ) : ParserStage(), ParsedStage
 
-    data object Error : ParserStage()
+    data object Error : ParserStage(), ErrorStage
 }
 
 sealed class SolverStage1 {

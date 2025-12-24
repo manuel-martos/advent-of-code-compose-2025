@@ -1,6 +1,9 @@
 package dev.mmartos.advent.screen.day02
 
 import dev.mmartos.advent.common.BaseViewModel
+import dev.mmartos.advent.common.ErrorStage
+import dev.mmartos.advent.common.ParsedStage
+import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlin.math.ceil
@@ -9,18 +12,19 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
+import dev.mmartos.advent.common.ParserStage as BaseParserStage
 
-sealed class ParserStage {
+sealed class ParserStage : BaseParserStage {
     data class Parsing(
         val currentItem: String,
         val productIDRanges: PersistentList<LongRange>,
-    ) : ParserStage()
+    ) : ParserStage(), ParsingStage
 
     data class Parsed(
         val productIDRanges: PersistentList<LongRange>,
-    ) : ParserStage()
+    ) : ParserStage(), ParsedStage
 
-    data object Error : ParserStage()
+    data object Error : ParserStage(), ErrorStage
 }
 
 sealed class SolverStage1 {

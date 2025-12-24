@@ -1,6 +1,9 @@
 package dev.mmartos.advent.screen.day01
 
 import dev.mmartos.advent.common.BaseViewModel
+import dev.mmartos.advent.common.ErrorStage
+import dev.mmartos.advent.common.ParsedStage
+import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlin.math.abs
@@ -8,6 +11,8 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
+import dev.mmartos.advent.common.ParserStage as BaseParserStage
+
 
 sealed class Direction {
     data object Left : Direction()
@@ -35,18 +40,18 @@ data class DialerState(
     val currentValue: Int,
 )
 
-sealed class ParserStage {
+sealed class ParserStage : BaseParserStage {
     data class Parsing(
         val currentLine: String,
         val dialMovements: PersistentList<DialMovement>,
         val totalProgress: Double,
-    ) : ParserStage()
+    ) : ParserStage(), ParsingStage
 
     data class Parsed(
         val dialMovements: PersistentList<DialMovement>,
-    ) : ParserStage()
+    ) : ParserStage(), ParsedStage
 
-    data object Error : ParserStage()
+    data object Error : ParserStage(), ErrorStage
 }
 
 sealed class SolverStage1 {

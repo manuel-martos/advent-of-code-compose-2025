@@ -26,6 +26,7 @@ import dev.mmartos.advent.ui.AutoScrollingTitledListLayout
 import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
+import dev.mmartos.advent.ui.ParserSection
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
@@ -49,19 +50,19 @@ fun Day05Screen(
         onStart = { input -> vm.startParser(input) },
         onBackClicked = onBackClicked,
         onDispose = { vm.stop() },
-        parsingContent = { parserStage, modifier ->
+        parserContent = { parserStage, modifier ->
             ParserSection(
                 parserStage = parserStage,
                 modifier = modifier,
             )
         },
-        solvingContent1 = { solverStage, modifier ->
+        solverContent1 = { solverStage, modifier ->
             Solver1Section(
                 solverStage = solverStage,
                 modifier = modifier,
             )
         },
-        solvingContent2 = { solverStage, modifier ->
+        solverContent2 = { solverStage, modifier ->
             Solver2Section(
                 solverStage = solverStage,
                 modifier = modifier,
@@ -78,29 +79,22 @@ private fun ParserSection(
     parserStage: ParserStage,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = parserStage.resolveSectionTitle(),
-        outline = parserStage.resolveSectionOutlineColor(),
-        modifier = modifier.fillMaxSize(),
-    ) {
-        when (val parserStage = parserStage) {
-            is ParserStage.Parsing ->
-                ParsingContent(
-                    parserStage = parserStage,
-                    modifier = Modifier
-                        .fillMaxSize()
-                )
-
-            is ParserStage.Parsed ->
-                ParsedContent(
-                    parserStage = parserStage,
-                    modifier = Modifier
-                        .fillMaxSize()
-                )
-
-            is ParserStage.Error -> Text("Parser error")
-        }
-    }
+    ParserSection(
+        parserStage = parserStage,
+        modifier = modifier,
+        parsingContent = { parsingStage: ParserStage.Parsing, modifier: Modifier ->
+            ParsingContent(
+                parserStage = parsingStage,
+                modifier = modifier
+            )
+        },
+        parsedContent = { parsedStage: ParserStage.Parsed, modifier: Modifier ->
+            ParsedContent(
+                parserStage = parsedStage,
+                modifier = modifier
+            )
+        },
+    )
 }
 
 @Composable

@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.mmartos.advent.common.ParserStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.models.DayDetails
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
-fun <PS, SS1, SS2> DayScaffold(
+fun <PS : ParserStage, SS1, SS2> DayScaffold(
     dayDetails: DayDetails,
     puzzleInput: PersistentList<String>,
     uiState: UiState<PS, SS1, SS2>,
@@ -31,9 +32,9 @@ fun <PS, SS1, SS2> DayScaffold(
     onBackClicked: () -> Unit,
     onDispose: () -> Unit,
     modifier: Modifier = Modifier,
-    parsingContent: @Composable (PS, Modifier) -> Unit = @Composable { _, _ -> },
-    solvingContent1: @Composable (SS1, Modifier) -> Unit = @Composable { _, _ -> },
-    solvingContent2: @Composable (SS2, Modifier) -> Unit = @Composable { _, _ -> },
+    parserContent: @Composable (PS, Modifier) -> Unit = @Composable { _, _ -> },
+    solverContent1: @Composable (SS1, Modifier) -> Unit = @Composable { _, _ -> },
+    solverContent2: @Composable (SS2, Modifier) -> Unit = @Composable { _, _ -> },
     parsingHeight: Dp = 360.dp,
     solvingHeight: Dp = 360.dp,
 ) {
@@ -52,7 +53,7 @@ fun <PS, SS1, SS2> DayScaffold(
             onBackClicked = onBackClicked,
         )
         uiState.parserStage?.run {
-            parsingContent.invoke(this, Modifier.height(parsingHeight))
+            parserContent.invoke(this, Modifier.height(parsingHeight))
         }
         if (uiState.isSolving()) {
             Row(
@@ -61,10 +62,10 @@ fun <PS, SS1, SS2> DayScaffold(
             ) {
                 var hasScrolled by remember { mutableStateOf(false) }
                 uiState.solverStage1?.run {
-                    solvingContent1.invoke(this, Modifier.weight(1f))
+                    solverContent1.invoke(this, Modifier.weight(1f))
                 }
                 uiState.solverStage2?.run {
-                    solvingContent2.invoke(this, Modifier.weight(1f))
+                    solverContent2.invoke(this, Modifier.weight(1f))
                 }
                 LaunchedEffect(uiState.solverStage1, uiState.solverStage2) {
                     if (!hasScrolled && uiState.solverStage1 != null && uiState.solverStage2 != null) {

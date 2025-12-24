@@ -1,6 +1,7 @@
 package dev.mmartos.advent.common
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
-abstract class BaseViewModel<PS, PD, SS1, SS2>(
+abstract class BaseViewModel<PS : ParserStage, PD, SS1, SS2>(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
@@ -47,8 +48,36 @@ abstract class BaseViewModel<PS, PD, SS1, SS2>(
     }
 }
 
+@Stable
+interface ParserStage {
+    fun isParsing(): Boolean
+    fun isParsed(): Boolean
+    fun isError(): Boolean
+}
+
+@Stable
+interface ParsingStage : ParserStage {
+    override fun isParsing(): Boolean = true
+    override fun isParsed(): Boolean = false
+    override fun isError(): Boolean = false
+}
+
+@Stable
+interface ParsedStage : ParserStage {
+    override fun isParsing(): Boolean = false
+    override fun isParsed(): Boolean = true
+    override fun isError(): Boolean = false
+}
+
+@Stable
+interface ErrorStage : ParserStage {
+    override fun isParsing(): Boolean = false
+    override fun isParsed(): Boolean = false
+    override fun isError(): Boolean = true
+}
+
 @Immutable
-data class UiState<PS, SS1, SS2>(
+data class UiState<PS : ParserStage, SS1, SS2>(
     val parserStage: PS? = null,
     val solverStage1: SS1? = null,
     val solverStage2: SS2? = null,
@@ -56,6 +85,6 @@ data class UiState<PS, SS1, SS2>(
     fun isSolving(): Boolean = solverStage1 != null || solverStage2 != null
 
     companion object {
-        fun <PS, SS1, SS2> initialState() = UiState<PS, SS1, SS2>()
+        fun <PS : ParserStage, SS1, SS2> initialState() = UiState<PS, SS1, SS2>()
     }
 }

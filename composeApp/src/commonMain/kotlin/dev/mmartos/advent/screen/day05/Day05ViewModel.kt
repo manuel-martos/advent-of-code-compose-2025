@@ -1,12 +1,16 @@
 package dev.mmartos.advent.screen.day05
 
 import dev.mmartos.advent.common.BaseViewModel
+import dev.mmartos.advent.common.ErrorStage
+import dev.mmartos.advent.common.ParsedStage
+import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
+import dev.mmartos.advent.common.ParserStage as BaseParserStage
 
 data class IngredientsDatabase(
     val freshIDs: PersistentList<LongRange>,
@@ -18,17 +22,17 @@ data class IngredientState(
     val isFresh: Boolean,
 )
 
-sealed class ParserStage {
+sealed class ParserStage : BaseParserStage {
     data class Parsing(
         val currentLine: String,
         val partialDatabase: IngredientsDatabase,
-    ) : ParserStage()
+    ) : ParserStage(), ParsingStage
 
     data class Parsed(
         val database: IngredientsDatabase,
-    ) : ParserStage()
+    ) : ParserStage(), ParsedStage
 
-    data object Error : ParserStage()
+    data object Error : ParserStage(), ErrorStage
 }
 
 sealed class SolverStage1 {
