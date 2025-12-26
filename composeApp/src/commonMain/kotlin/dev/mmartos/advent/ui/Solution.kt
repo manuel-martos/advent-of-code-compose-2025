@@ -31,17 +31,19 @@ fun Solution(
     partial: Boolean,
     modifier: Modifier = Modifier,
     layout: SolutionLayout = SolutionLayout.Vertical,
-    solutionTextStyle: TextStyle = MaterialTheme.typography.displaySmall
+    solutionTextStyle: TextStyle = MaterialTheme.typography.displaySmall,
+    customCaption: String? = null,
 ) {
     when (layout) {
-        SolutionLayout.Vertical -> SolutionVertical(solution, partial, solutionTextStyle, modifier)
-        SolutionLayout.Horizontal -> SolutionHorizontal(solution, partial, solutionTextStyle, modifier)
+        SolutionLayout.Vertical -> SolutionVertical(solution, customCaption, partial, solutionTextStyle, modifier)
+        SolutionLayout.Horizontal -> SolutionHorizontal(solution, customCaption, partial, solutionTextStyle, modifier)
     }
 }
 
 @Composable
 private fun SolutionVertical(
     solution: String,
+    customCaption: String?,
     partial: Boolean,
     solutionTextStyle: TextStyle,
     modifier: Modifier = Modifier
@@ -51,7 +53,7 @@ private fun SolutionVertical(
         verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
         modifier = modifier,
     ) {
-        SolutionCaption(partial)
+        SolutionCaption(customCaption, partial)
         SolutionContent(solution, solutionTextStyle)
     }
 }
@@ -59,6 +61,7 @@ private fun SolutionVertical(
 @Composable
 private fun SolutionHorizontal(
     solution: String,
+    customCaption: String?,
     partial: Boolean,
     solutionTextStyle: TextStyle,
     modifier: Modifier = Modifier
@@ -68,18 +71,19 @@ private fun SolutionHorizontal(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
     ) {
-        SolutionCaption(partial)
+        SolutionCaption(customCaption, partial)
         SolutionContent(solution, solutionTextStyle)
     }
 }
 
 @Composable
 private fun SolutionCaption(
+    customCaption: String?,
     partial: Boolean,
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = partial.resolve(),
+        text = customCaption ?: partial.resolve(),
         style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
         modifier = modifier,
     )
