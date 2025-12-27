@@ -151,7 +151,7 @@ private fun Locations(
         items = locations,
         layout = AutoScrollingTitledListLayout.GridLayoutTitled(5),
         modifier = modifier,
-        title = { Text("Junction Boxes") },
+        title = { Text("Locations") },
         itemContent = {
             Text(
                 text = "[${String.format("%5d", it.x)}, ${String.format("%5d", it.y)}]",
