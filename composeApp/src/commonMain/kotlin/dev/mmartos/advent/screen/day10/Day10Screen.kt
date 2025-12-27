@@ -160,15 +160,16 @@ private fun Machines(
     machines: PersistentList<Machine>,
     modifier: Modifier = Modifier
 ) {
+    val maxLights = machines.maxOf { it.nLights }
     AutoScrollingTitledList(
         items = machines,
-        layout = AutoScrollingTitledListLayout.GridLayoutTitled(3),
+        layout = AutoScrollingTitledListLayout.ListTitled,
         modifier = modifier,
         title = { Text("Machines") },
         itemContent = { machine ->
             Row {
                 Text(
-                    text = String.format("Machine #%03d: ", machine.id),
+                    text = String.format("#%03d: ", machine.id),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.ExtraLight,
@@ -176,7 +177,16 @@ private fun Machines(
                     maxLines = 1,
                 )
                 Text(
-                    text = "[${machine.target}]",
+                    text = "[${machine.target}]".padEnd(maxLights + 5),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    maxLines = 1,
+                )
+                val joltages = machine.joltage.joinToString(", ") { String.format("%03d", it) }
+                Text(
+                    text = "{$joltages}",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
