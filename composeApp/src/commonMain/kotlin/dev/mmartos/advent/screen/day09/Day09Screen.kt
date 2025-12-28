@@ -36,6 +36,7 @@ import dev.mmartos.advent.ui.ParserSection
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.utils.Point2D
 import kotlin.math.min
 import kotlinx.collections.immutable.PersistentList
 import org.koin.compose.viewmodel.koinViewModel

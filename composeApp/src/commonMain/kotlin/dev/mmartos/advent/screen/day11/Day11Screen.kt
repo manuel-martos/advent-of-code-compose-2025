@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
@@ -39,6 +38,7 @@ import dev.mmartos.advent.ui.ParserSection
 import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.utils.Gradient
 import kotlin.math.ceil
 import kotlin.math.sqrt
 import kotlinx.collections.immutable.PersistentList
@@ -326,9 +326,8 @@ private fun String.resolveNodeBrush(
             center = Offset(0.45f * nodeSize.width, 0.4f * nodeSize.height),
             radius = nodeSize.maxDimension,
         )
-    }
-    else {
-        val nodeColor = NodeGradient.colorAt((hashCode() % 16.toFloat() / 15f))
+    } else {
+        val nodeColor = Gradient.colorAt((hashCode() % 16.toFloat() / 15f))
         radialGradient(
             colors = listOf(
                 nodeColor,
@@ -443,16 +442,3 @@ private fun SolverStage2.resolveSectionOutlineColor(): Color =
         is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
         is SolverStage2.Solved -> Color(0xff98fb98)
     }
-
-object NodeGradient {
-
-    private val Start = Color(0xFF38BDF8)
-    private val End = Color(0xFFFBBF24)
-
-    /**
-     * @param t value in range [0f, 1f]
-     */
-    fun colorAt(t: Float): Color {
-        return lerp(Start, End, t.coerceIn(0f, 1f))
-    }
-}

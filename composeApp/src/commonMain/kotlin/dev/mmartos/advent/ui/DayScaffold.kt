@@ -34,7 +34,7 @@ fun <PS : ParserStage, SS1, SS2> DayScaffold(
     modifier: Modifier = Modifier,
     parserContent: @Composable (PS, Modifier) -> Unit = @Composable { _, _ -> },
     solverContent1: @Composable (SS1, Modifier) -> Unit = @Composable { _, _ -> },
-    solverContent2: @Composable (SS2, Modifier) -> Unit = @Composable { _, _ -> },
+    solverContent2: (@Composable (SS2, Modifier) -> Unit)? = @Composable { _, _ -> },
     parsingHeight: Dp = 360.dp,
     solvingHeight: Dp = 360.dp,
 ) {
@@ -65,10 +65,10 @@ fun <PS : ParserStage, SS1, SS2> DayScaffold(
                     solverContent1.invoke(this, Modifier.weight(1f))
                 }
                 uiState.solverStage2?.run {
-                    solverContent2.invoke(this, Modifier.weight(1f))
+                    solverContent2?.invoke(this, Modifier.weight(1f))
                 }
                 LaunchedEffect(uiState.solverStage1, uiState.solverStage2) {
-                    if (!hasScrolled && uiState.solverStage1 != null && uiState.solverStage2 != null) {
+                    if (!hasScrolled && uiState.solverStage1 != null && (uiState.solverStage2 != null || solverContent2 == null)) {
                         hasScrolled = true
                         scrollState.scrollTo(scrollState.maxValue)
                     }
@@ -81,4 +81,8 @@ fun <PS : ParserStage, SS1, SS2> DayScaffold(
             onDispose.invoke()
         }
     }
+}
+
+private inline fun <reified T> isNothing(): Boolean {
+    return T::class == Nothing::class
 }

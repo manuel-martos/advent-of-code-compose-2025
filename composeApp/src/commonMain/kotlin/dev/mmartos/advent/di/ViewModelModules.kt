@@ -11,6 +11,7 @@ import dev.mmartos.advent.screen.day08.Day08ViewModel
 import dev.mmartos.advent.screen.day09.Day09ViewModel
 import dev.mmartos.advent.screen.day10.Day10ViewModel
 import dev.mmartos.advent.screen.day11.Day11ViewModel
+import dev.mmartos.advent.screen.day12.Day12ViewModel
 import dev.mmartos.advent.screen.home.HomeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -28,4 +29,5 @@ val viewModelModules = module {
     viewModel { Day09ViewModel() }
     viewModel { Day10ViewModel() }
     viewModel { Day11ViewModel() }
+    viewModel { Day12ViewModel() }
 }

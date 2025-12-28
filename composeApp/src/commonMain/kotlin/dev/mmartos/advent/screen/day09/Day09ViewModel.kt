@@ -5,6 +5,7 @@ import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
+import dev.mmartos.advent.utils.Point2D
 import dev.mmartos.advent.utils.delayNanos
 import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlin.math.abs
@@ -21,11 +22,6 @@ data class Locations(
     val min: Point2D,
     val max: Point2D,
     val middle: Point2D,
-)
-
-data class Point2D(
-    val x: Long,
-    val y: Long,
 )
 
 data class RedTilesRect(
