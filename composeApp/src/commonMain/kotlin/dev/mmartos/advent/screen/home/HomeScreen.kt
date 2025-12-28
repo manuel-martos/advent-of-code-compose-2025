@@ -77,7 +77,7 @@ private fun AdventCalendar(
             )
             .padding(4.dp)
     ) {
-        val cellModifier = Modifier.size(150.dp).padding(4.dp)
+        val cellModifier = Modifier.size(146.dp).padding(4.dp)
         val redCellModifier = cellModifier
             .background(Color(0xFFAD0202), RoundedCornerShape(innerCorner))
             .clip(RoundedCornerShape(innerCorner))
