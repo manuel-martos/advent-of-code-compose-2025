@@ -63,6 +63,19 @@ compose.desktop {
             packageName = "dev.mmartos.advent"
             packageVersion = "1.0.0"
             description = "Advent of Code 2025"
+
+            windows {
+                // must be .ico (ideally multi-size: 16/32/48/256)
+                iconFile.set(project.file("icons/app.ico"))
+            }
+            macOS {
+                // must be .icns
+                iconFile.set(project.file("icons/app.icns"))
+            }
+            linux {
+                // usually .png (commonly 256x256 or 512x512)
+                iconFile.set(project.file("icons/app.png"))
+            }
         }
     }
 }
