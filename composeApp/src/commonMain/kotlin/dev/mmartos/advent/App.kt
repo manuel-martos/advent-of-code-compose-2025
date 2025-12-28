@@ -19,6 +19,7 @@ import dev.mmartos.advent.screen.home.HomeScreen
 import dev.mmartos.advent.screen.puzzleInput.PuzzleScreen
 import dev.mmartos.advent.theme.AoCTheme
 import dev.mmartos.advent.ui.Background
+import dev.mmartos.advent.ui.modifiers.snowShader
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 
@@ -42,6 +43,7 @@ fun App() {
                         minWidth = 1024.dp,
                         minHeight = 768.dp,
                     )
+                    .snowShader()
             ) { paddingValues ->
                 val backStack = remember { mutableStateListOf<AoCKey>(HomeKey) }
                 val onBack: () -> Unit = { backStack.removeLastOrNull() }

@@ -6,6 +6,7 @@ import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.utils.threadSafeUpdate
+import kotlin.collections.buildMap
 import kotlin.collections.mutableMapOf
 import kotlin.math.max
 import kotlin.math.min
@@ -257,7 +258,12 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             junctionBoxes = this,
-                            circuits = circuits.mapValues { entry -> entry.value.takeLast(25).toPersistentList() }.toPersistentMap(),
+                            circuits = buildMap {
+                                val entry = circuits.entries.firstOrNull()
+                                if (entry != null) {
+                                    put(entry.key, entry.value.toPersistentList())
+                                }
+                            }.toPersistentMap(),
                             partialSolution = result.toString(),
                         )
                     )
@@ -270,7 +276,12 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         junctionBoxes = this,
-                        circuits = circuits.mapValues { entry -> entry.value.takeLast(5).toPersistentList() }.toPersistentMap(),
+                        circuits = buildMap {
+                            val entry = circuits.entries.firstOrNull()
+                            if (entry != null) {
+                                put(entry.key, entry.value.toPersistentList())
+                            }
+                        }.toPersistentMap(),
                         solution = result.toString(),
                     )
                 )

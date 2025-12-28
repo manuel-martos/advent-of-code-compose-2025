@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import dev.mmartos.advent.ui.modifiers.snowShader
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.isActive
