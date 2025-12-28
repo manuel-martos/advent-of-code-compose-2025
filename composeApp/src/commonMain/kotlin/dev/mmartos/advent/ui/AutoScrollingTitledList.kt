@@ -2,6 +2,7 @@ package dev.mmartos.advent.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -66,15 +67,20 @@ private fun <T> AutoScrollingTitledList(
         verticalArrangement = spacedBy(8.dp)
     ) {
         title.invoke()
-        LazyColumn(
-            state = lazyListState,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.small)
                 .padding(8.dp)
         ) {
-            items(items) { item ->
-                itemContent(item)
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(items) { item ->
+                    itemContent(item)
+                }
             }
         }
         LaunchedEffect(items.size) {
@@ -97,16 +103,22 @@ private fun <T> AutoScrollingTitledGrid(
         verticalArrangement = spacedBy(8.dp)
     ) {
         title.invoke()
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(columns),
-            state = lazyGridState,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.small)
                 .padding(8.dp)
         ) {
-            items(items) { item ->
-                itemContent(item)
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                state = lazyGridState,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                items(items) { item ->
+                    itemContent(item)
+                }
             }
         }
         LaunchedEffect(items.size) {
