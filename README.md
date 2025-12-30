@@ -20,6 +20,9 @@ On some days, the web version may exhibit performance or “threading-like” is
 
 # 📹 Videos
 
+ℹ️ **Tip:** Use Ctrl/Cmd + Click to open videos in a new tab.
+
+
 <table>
   <thead>
     <tr>
