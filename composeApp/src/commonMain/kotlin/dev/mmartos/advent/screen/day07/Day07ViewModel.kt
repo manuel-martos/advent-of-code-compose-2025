@@ -5,8 +5,14 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.longDelay
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.Delay.tinyDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlin.math.max
 import kotlin.math.roundToLong
 import kotlinx.collections.immutable.PersistentList
@@ -16,9 +22,8 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.collections.immutable.toPersistentSet
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 @Immutable
 data class TachyonDiagram(
@@ -47,35 +52,39 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val tachyonDiagram: TachyonDiagram,
         val activeBeams: PersistentSet<Pair<Int, Int>>,
         val activeSplits: PersistentSet<Pair<Int, Int>>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val tachyonDiagram: TachyonDiagram,
         val activeBeams: PersistentSet<Pair<Int, Int>>,
         val activeSplits: PersistentSet<Pair<Int, Int>>,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val tachyonDiagram: TachyonDiagram,
         val beams: PersistentSet<Pair<Int, Int>>,
         val beamTimeline: PersistentMap<Pair<Int, Int>, Timeline>,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val tachyonDiagram: TachyonDiagram,
         val beams: PersistentSet<Pair<Int, Int>>,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day07UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -94,7 +103,7 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                     start = index to line.indexOf('S')
                 }
                 content += line.toCharArray()
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -107,19 +116,19 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                         ),
                     )
                 }
-                delay(10)
+                longDelay(DelayReason.Parser)
             }
             if (!content.isValid()) {
                 error("Invalid input")
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         tachyonDiagram = TachyonDiagram(
@@ -138,7 +147,7 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
 
     fun solvePart1() = doSolving {
         var result = 0L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             val activeBeams = mutableSetOf<Pair<Int, Int>>()
             var currentBeams = mutableSetOf(start)
             val activeSplits = mutableSetOf<Pair<Int, Int>>()
@@ -163,7 +172,7 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                         }
                     }
                 }.toMutableSet()
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage1 = SolverStage1.Solving(
                             tachyonDiagram = this,
@@ -173,9 +182,9 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                         )
                     )
                 }
-                delay(5)
+                regularDelay(DelayReason.Solver)
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         tachyonDiagram = this,
@@ -190,7 +199,7 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
 
     fun solvePart2() = doSolving {
         var result = 0L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             val activeBeams = mutableSetOf<Pair<Int, Int>>()
             val activeSplits = mutableSetOf<Pair<Int, Int>>()
             val dpMap = Array(rows) { LongArray(cols) { 0L } }
@@ -230,13 +239,19 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                         while (timelineRow != start.first) {
                             val currentRow = timelineRow - 1
                             val candidates = buildMap {
-                                if ((timelineCol - 1) >= 0 && content[currentRow][timelineCol - 1] == '^' && activeSplits.contains(currentRow to timelineCol - 1)) {
+                                if ((timelineCol - 1) >= 0 && content[currentRow][timelineCol - 1] == '^' && activeSplits.contains(
+                                        currentRow to timelineCol - 1
+                                    )
+                                ) {
                                     put(currentRow to (timelineCol - 1), Timeline.SlipRight)
                                 }
                                 if (dpMap[currentRow][timelineCol] != 0L && (currentRow % 2 != 0)) {
                                     put(currentRow to timelineCol, Timeline.Straight)
                                 }
-                                if ((timelineCol + 1) < cols && content[currentRow][timelineCol + 1] == '^' && activeSplits.contains(currentRow to timelineCol + 1)) {
+                                if ((timelineCol + 1) < cols && content[currentRow][timelineCol + 1] == '^' && activeSplits.contains(
+                                        currentRow to timelineCol + 1
+                                    )
+                                ) {
                                     put(currentRow to (timelineCol + 1), Timeline.SlipLeft)
                                 }
                             }
@@ -251,7 +266,7 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                             }
                         }
                     }
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage2 = SolverStage2.Solving(
                                 tachyonDiagram = this,
@@ -261,10 +276,10 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                             )
                         )
                     }
-                    delay(1)
+                    tinyDelay(DelayReason.Solver)
                 }
                 result = nextResult
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             tachyonDiagram = this,
@@ -274,9 +289,9 @@ class Day07ViewModel : BaseViewModel<ParserStage, TachyonDiagram, SolverStage1, 
                         )
                     )
                 }
-                delay(1)
+                tinyDelay(DelayReason.Solver)
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         tachyonDiagram = this,

@@ -7,6 +7,7 @@ import advent_of_code_compose_2025.composeapp.generated.resources.led_off
 import advent_of_code_compose_2025.composeapp.generated.resources.led_on
 import advent_of_code_compose_2025.composeapp.generated.resources.ready_off
 import advent_of_code_compose_2025.composeapp.generated.resources.ready_on
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,8 +35,8 @@ import androidx.compose.ui.graphics.BlendMode.Companion.Luminosity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
@@ -46,10 +46,12 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.ui.SolverSection
+import dev.mmartos.advent.utils.leadingZeros
 import kotlinx.collections.immutable.PersistentList
+import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -169,9 +171,9 @@ private fun Machines(
         itemContent = { machine ->
             Row {
                 Text(
-                    text = String.format("#%03d: ", machine.id),
+                    text = "#${machine.id.leadingZeros(3)}: ",
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                         fontWeight = FontWeight.ExtraLight,
                     ),
                     maxLines = 1,
@@ -179,16 +181,16 @@ private fun Machines(
                 Text(
                     text = "[${machine.target}]".padEnd(maxLights + 5),
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                         fontWeight = FontWeight.Bold,
                     ),
                     maxLines = 1,
                 )
-                val joltages = machine.joltage.joinToString(", ") { String.format("%03d", it) }
+                val joltages = machine.joltage.joinToString(", ") { it.leadingZeros(3) }
                 Text(
                     text = "{$joltages}",
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                         fontWeight = FontWeight.Bold,
                     ),
                     maxLines = 1,
@@ -204,12 +206,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val currentMachine = (solverStage as? SolverStage1.Solving)?.currentMachine
             ?: (solverStage as? SolverStage1.Solved)?.lastMachine
         val currentState = (solverStage as? SolverStage1.Solving)?.currentState
@@ -261,7 +262,7 @@ private fun MachineWithLightsDiagram(
             .clip(MaterialTheme.shapes.medium),
     ) {
         Text(
-            text = String.format("Machine #%03d", machine.id),
+            text = "Machine #${machine.id.leadingZeros(3)}",
             style = MaterialTheme.typography.titleLarge,
             maxLines = 1,
         )
@@ -319,32 +320,15 @@ private fun Int?.resolveButtonColorFilter(buttonIndex: Int): ColorFilter? =
     if (this != null && this == buttonIndex) ColorFilter.tint(Color.LightGray.copy(alpha = 0.4f), Luminosity) else null
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val currentMachine = (solverStage as? SolverStage2.Solving)?.currentMachine
             ?: (solverStage as? SolverStage2.Solved)?.lastMachine
         val currentJoltages = (solverStage as? SolverStage2.Solving)?.currentJoltages
@@ -396,7 +380,7 @@ private fun MachineWithJoltageDiagram(
             .clip(MaterialTheme.shapes.medium),
     ) {
         Text(
-            text = String.format("Machine #%03d", machine.id),
+            text = "Machine #${machine.id.leadingZeros(3)}",
             style = MaterialTheme.typography.titleLarge,
             maxLines = 1,
         )
@@ -420,8 +404,8 @@ private fun MachineWithJoltageDiagram(
                         .padding(2.dp)
                 ) {
                     Text(
-                        text = String.format("%03d", currentJoltages[lightIndex]),
-                        style = MaterialTheme.typography.titleSmall.copy(fontFamily = FontFamily.Monospace),
+                        text = currentJoltages[lightIndex].leadingZeros(3),
+                        style = MaterialTheme.typography.titleSmall.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -446,18 +430,3 @@ private fun MachineWithJoltageDiagram(
     }
 }
 
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
-    }
-
-@Composable
-private fun SolverStage2.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage2.Solved -> Color(0xff98fb98)
-    }

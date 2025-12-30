@@ -1,5 +1,10 @@
 package dev.mmartos.advent.screen.day05
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.check_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.cross_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,17 +13,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.ui.AutoScrollingTitledList
@@ -27,10 +32,12 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.ui.SolverSection
 import kotlinx.collections.immutable.PersistentList
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -135,23 +142,6 @@ private fun ParsedContent(
 }
 
 @Composable
-private fun ParserStage.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is ParserStage.Parsing -> MaterialTheme.colorScheme.outline
-        is ParserStage.Parsed -> Color(0xff98fb98)
-        is ParserStage.Error -> MaterialTheme.colorScheme.error
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun ParserStage.resolveSectionTitle(): String =
-    when (this) {
-        is ParserStage.Parsing -> "➡\uFE0F Parsing"
-        is ParserStage.Parsed -> "✅ Parsed"
-        is ParserStage.Error -> "\uD83D\uDEA8 Error"
-    }
-
-@Composable
 private fun IngredientsDatabaseContent(
     database: IngredientsDatabase,
     modifier: Modifier = Modifier,
@@ -192,7 +182,7 @@ private fun FreshIDRanges(
                 text = it.toString(),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                 ),
             )
         }
@@ -219,7 +209,7 @@ private fun Ingredients(
                 text = it.toString(),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                 ),
             )
         }
@@ -231,12 +221,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val verifiedIngredients = (solverStage as? SolverStage1.Solving)?.verifiedIngredients
             ?: (solverStage as? SolverStage1.Solved)?.verifiedIngredients
         val currentSolution = (solverStage as? SolverStage1.Solving)?.partialSolution
@@ -259,33 +248,17 @@ private fun Solver1Section(
     }
 }
 
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
 
 @Composable
 private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val verifiedFreshIDs = (solverStage as? SolverStage2.Solving)?.verifiedFreshIDs
             ?: (solverStage as? SolverStage2.Solved)?.verifiedFreshIDs
         val currentSolution = (solverStage as? SolverStage2.Solving)?.partialSolution
@@ -309,21 +282,6 @@ private fun Solver2Section(
 }
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
-    }
-
-@Composable
-private fun SolverStage2.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage2.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun VerifiedIngredientsContent(
     verifiedIngredients: PersistentList<IngredientState>,
     modifier: Modifier = Modifier,
@@ -339,17 +297,27 @@ private fun VerifiedIngredientsContent(
             )
         },
         itemContent = {
-            val emoji = if (it.isFresh) "✅" else "\uD83D\uDEA8"
+            val drawable = if (it.isFresh) Res.drawable.check_mark else Res.drawable.cross_mark
             val color = if (it.isFresh) Color.White else Color.Red
             val fontWeight = if (it.isFresh) FontWeight.Normal else FontWeight.Bold
-            Text(
-                text = "$emoji -> ${it.ingredientId}",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = color,
-                    fontWeight = fontWeight,
-                ),
-            )
+            Row(
+                horizontalArrangement = spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(drawable),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = " -> ${it.ingredientId}",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
+                        color = color,
+                        fontWeight = fontWeight,
+                    ),
+                )
+            }
         }
     )
 }
@@ -375,7 +343,7 @@ private fun VerifiedFreshIDs(
             Text(
                 text = it.toString(),
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                 ),
             )
         }

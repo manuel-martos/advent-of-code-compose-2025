@@ -10,11 +10,11 @@ plugins {
 kotlin {
     jvm()
     
-//    js {
-//        browser()
-//        binaries.executable()
-//    }
-//
+    js {
+        browser()
+        binaries.executable()
+    }
+
 //    @OptIn(ExperimentalWasmDsl::class)
 //    wasmJs {
 //        browser()
@@ -32,7 +32,6 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.runtime)
-            implementation(compose.uiTooling)
             implementation(compose.ui)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -60,7 +59,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "dev.mmartos.advent"
+            packageName = "Advent of Code 2025"
             packageVersion = "1.0.0"
             description = "Advent of Code 2025"
 

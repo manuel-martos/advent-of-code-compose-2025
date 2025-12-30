@@ -4,14 +4,13 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mmartos.advent.utils.FlowUpdater
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
@@ -19,8 +18,8 @@ abstract class BaseViewModel<PS : ParserStage, PD, SS1, SS2>(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    protected val _uiState: MutableStateFlow<UiState<PS, SS1, SS2>> = MutableStateFlow(UiState.initialState())
-    val uiState: StateFlow<UiState<PS, SS1, SS2>> = _uiState.asStateFlow()
+    protected val uiStateUpdater = FlowUpdater<UiState<PS, SS1, SS2>>(UiState.initialState())
+    val uiState: StateFlow<UiState<PS, SS1, SS2>> = uiStateUpdater.state.asStateFlow()
 
     private val currentJobs: MutableList<Job> = mutableListOf()
 
@@ -28,7 +27,7 @@ abstract class BaseViewModel<PS : ParserStage, PD, SS1, SS2>(
 
     protected fun doParsing(block: suspend CoroutineScope.() -> Unit) {
         currentJobs += viewModelScope.launch(dispatcher) {
-            _uiState.update { UiState.initialState() }
+            uiStateUpdater.update { UiState.initialState() }
             block()
         }
     }
@@ -43,7 +42,7 @@ abstract class BaseViewModel<PS : ParserStage, PD, SS1, SS2>(
         viewModelScope.launch(dispatcher) {
             currentJobs.forEach { it.cancel() }
             currentJobs.joinAll()
-            _uiState.update { UiState.initialState() }
+            uiStateUpdater.update { UiState.initialState() }
         }
     }
 }
@@ -74,6 +73,29 @@ interface ErrorStage : ParserStage {
     override fun isParsing(): Boolean = false
     override fun isParsed(): Boolean = false
     override fun isError(): Boolean = true
+}
+
+enum class SolverPart {
+    SOLVER_PART_1, SOLVER_PART_2
+}
+
+@Stable
+interface SolverStage {
+    fun solverPart(): SolverPart
+    fun isSolving(): Boolean
+    fun isSolved(): Boolean
+}
+
+@Stable
+interface SolvingStage : SolverStage {
+    override fun isSolving(): Boolean = true
+    override fun isSolved(): Boolean = false
+}
+
+@Stable
+interface SolvedStage : SolverStage {
+    override fun isSolving(): Boolean = false
+    override fun isSolved(): Boolean = true
 }
 
 @Immutable

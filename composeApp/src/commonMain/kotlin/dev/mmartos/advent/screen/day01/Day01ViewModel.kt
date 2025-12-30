@@ -1,27 +1,34 @@
 package dev.mmartos.advent.screen.day01
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.rotate_left
+import advent_of_code_compose_2025.composeapp.generated.resources.rotate_right
 import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.tinyDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlin.math.abs
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
+import org.jetbrains.compose.resources.DrawableResource
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 
 sealed class Direction {
     data object Left : Direction()
     data object Right : Direction()
 
-    fun toEmoji(): String =
+    fun toDrawable(): DrawableResource =
         when (this) {
-            Left -> "↺"
-            Right -> "↻"
+            Left -> Res.drawable.rotate_left
+            Right -> Res.drawable.rotate_right
         }
 }
 
@@ -29,9 +36,6 @@ data class DialMovement(
     val direction: Direction,
     val steps: Int,
 ) {
-    override fun toString(): String =
-        "${direction.toEmoji()} $steps"
-
     fun effectiveMovement(): Int =
         steps * (if (direction == Direction.Right) 1 else -1)
 }
@@ -54,30 +58,34 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val currentDialMovement: DialMovement,
         val currentDialerState: DialerState,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val currentDialerState: DialerState,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val currentDialMovement: DialMovement,
         val currentDialerState: DialerState,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val currentDialerState: DialerState,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day01UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -97,7 +105,7 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
                     steps = currentLine.substring(1).toInt(),
                 )
                 parsedMovements.add(dialMovement)
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = currentLine,
@@ -106,16 +114,16 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
                         )
                     )
                 }
-                delay(1)
+                tinyDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         dialMovements = parsedMovements.toPersistentList(),
@@ -131,8 +139,8 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
         var zeroCounter = 0
         var newDialerState = DialerState(50)
         var lastDialerState: DialerState = newDialerState
-        _uiState.value.parsedData?.forEach { movement ->
-            _uiState.threadSafeUpdate {
+        uiState.value.parsedData?.forEach { movement ->
+            uiStateUpdater.update {
                 newDialerState = DialerState(
                     currentValue = lastDialerState.currentValue + movement.effectiveMovement(),
                 )
@@ -148,9 +156,9 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
                 )
             }
             lastDialerState = newDialerState
-            delay(1)
+            tinyDelay(DelayReason.Solver)
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage1 = SolverStage1.Solved(
                     currentDialerState = lastDialerState,
@@ -164,8 +172,8 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
         var zeroCounter = 0
         var newDialerState = DialerState(50)
         var lastDialerState: DialerState = newDialerState
-        _uiState.value.parsedData?.forEach { movement ->
-            _uiState.threadSafeUpdate {
+        uiState.value.parsedData?.forEach { movement ->
+            uiStateUpdater.update {
                 newDialerState = DialerState(
                     currentValue = lastDialerState.currentValue + movement.effectiveMovement(),
                 )
@@ -179,9 +187,9 @@ class Day01ViewModel : BaseViewModel<ParserStage, List<DialMovement>, SolverStag
                 )
             }
             lastDialerState = newDialerState
-            delay(1)
+            tinyDelay(DelayReason.Solver)
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage2 = SolverStage2.Solved(
                     currentDialerState = lastDialerState,

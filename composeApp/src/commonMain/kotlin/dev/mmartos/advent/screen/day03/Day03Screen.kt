@@ -1,5 +1,7 @@
 package dev.mmartos.advent.screen.day03
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -32,11 +34,12 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
+import dev.mmartos.advent.ui.SolverSection
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import org.jetbrains.compose.resources.Font
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -141,23 +144,6 @@ private fun ParsedContent(
 }
 
 @Composable
-private fun ParserStage.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is ParserStage.Parsing -> MaterialTheme.colorScheme.outline
-        is ParserStage.Parsed -> Color(0xff98fb98)
-        is ParserStage.Error -> MaterialTheme.colorScheme.error
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun ParserStage.resolveSectionTitle(): String =
-    when (this) {
-        is ParserStage.Parsing -> "➡\uFE0F Parsing"
-        is ParserStage.Parsed -> "✅ Parsed"
-        is ParserStage.Error -> "\uD83D\uDEA8 Error"
-    }
-
-@Composable
 private fun BatteriesBanks(
     batteriesBanks: PersistentList<String>,
     modifier: Modifier = Modifier,
@@ -170,7 +156,7 @@ private fun BatteriesBanks(
         itemContent = {
             Text(
                 text = it,
-                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
             )
         }
     )
@@ -181,12 +167,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val partialSolvedBatteriesBank = (solverStage as? SolverStage1.Solving)?.partialSolvedBatteriesBank
         val solvedBatteriesBanks = (solverStage as? SolverStage1.Solving)?.solvedBatteriesBanks
             ?: (solverStage as? SolverStage1.Solved)?.solvedBatteriesBanks
@@ -218,31 +203,15 @@ private fun Solver1Section(
 }
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val partialSolvedBatteriesBank = (solverStage as? SolverStage2.Solving)?.partialSolvedBatteriesBank
         val solvedBatteriesBanks = (solverStage as? SolverStage2.Solving)?.solvedBatteriesBanks
             ?: (solverStage as? SolverStage2.Solved)?.solvedBatteriesBanks
@@ -274,21 +243,6 @@ private fun Solver2Section(
 }
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
-    }
-
-@Composable
-private fun SolverStage2.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage2.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun SolvedBatteriesBanks(
     solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
     modifier: Modifier = Modifier
@@ -308,7 +262,7 @@ private fun SolvedBatteriesBanks(
                 text = it.resolve(),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.White,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
                 ),

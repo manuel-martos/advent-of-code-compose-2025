@@ -1,5 +1,7 @@
 package dev.mmartos.advent.screen.day02
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -12,13 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.ui.AutoScrollingTitledList
@@ -27,10 +28,12 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
+import dev.mmartos.advent.ui.SolverSection
+import dev.mmartos.advent.utils.leadingZeros
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import org.jetbrains.compose.resources.Font
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -147,14 +150,14 @@ private fun ProductIDRanges(
         itemContent = { (index, range) ->
             Text(
                 text = range.resolve(index),
-                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
             )
         }
     )
 }
 
 private fun LongRange.resolve(index: Int): String =
-    "Range ${String.format("%02d", index + 1)}: $this"
+    "Range ${index.leadingZeros(2)}: $this"
 
 
 @Composable
@@ -162,12 +165,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val currentRange = (solverStage as? SolverStage1.Solving)?.currentRange
         val currentSolution = (solverStage as? SolverStage1.Solving)?.partialSolution
             ?: (solverStage as? SolverStage1.Solved)?.solution
@@ -193,31 +195,15 @@ private fun Solver1Section(
 }
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val currentRange = (solverStage as? SolverStage2.Solving)?.currentRange
         val currentSolution = (solverStage as? SolverStage2.Solving)?.partialSolution
             ?: (solverStage as? SolverStage2.Solved)?.solution
@@ -241,21 +227,6 @@ private fun Solver2Section(
         )
     }
 }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
-    }
-
-@Composable
-private fun SolverStage2.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage2.Solved -> Color(0xff98fb98)
-    }
 
 @Composable
 private fun ProductIDRange(
@@ -282,7 +253,7 @@ private fun ProductIDRange(
                 text = productIDRange.toString(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = Color.White,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()
                 ),
             )
         }
