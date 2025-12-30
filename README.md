@@ -1,55 +1,25 @@
-This is a Kotlin Multiplatform project targeting Web, Desktop (JVM).
+# Advent of Code 2025 — Compose Multiplatform (Web + Desktop)
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Advent of Code 2025 visuals built with **Kotlin Multiplatform** and a **Compose Multiplatform UI**, targeting:
 
-### Build and Run Desktop (JVM) Application
+- 🖥️ Desktop (JVM)
+- 🌐 Web (Kotlin/JS target)
 
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
+This repository goes beyond being a simple collection of puzzle solutions. Its **main goal is to provide visualizations for each Advent of Code 2025 challenge**, turning the daily problems into visually rich experiences.
 
-### Build and Run Web Application
+Each day’s solution is crafted not only to solve the puzzle, but also to **present the logic and results in an appealing way**, with a consistent **Christmas-inspired theme** across the entire app. Animations, layouts, and color choices aim to capture the festive spirit while remaining clear and readable. To reinforce the seasonal atmosphere, the project includes a custom **AGSL (Android Graphics Shading Language) shader** that simulates **falling snow** on supported platforms.
 
-To build and run the development version of the web app, use the run configuration from the run widget
-in your IDE's toolbar or run it directly from the terminal:
-- for the Wasm target (faster, modern browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-- for the JS target (slower, supports older browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:jsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:jsBrowserDevelopmentRun
-    ```
+You **don’t need to clone or build the project locally** to try it out. A companion GitHub Pages site is available here:
 
----
+👉 https://manuel-martos.github.io/advent-of-code-compose-2025/
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+This runs the **Kotlin/JS target directly in the browser**, allowing you to explore the visualizations instantly.
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+⚠️ **Note on Kotlin/JS limitations**  
+On some days, the web version may exhibit performance or “threading-like” issues. This is due to the fact that **Kotlin/JS does not provide true multithreading**, and its coroutine support is implemented as a **single-threaded, event-loop–based simulation** on top of JavaScript. As a result, solutions that rely heavily on concurrency or long-running computations may behave differently compared to the JVM/Desktop version.
+
+# 🙌 Credits
+
+Advent of Code by Eric Wastl: https://adventofcode.com/
+
+Solution for some days has been inspired by Marcin Wisniowski (@Nohus) and his awesome solutions [here](https://github.com/Nohus/AdventofCode2025).
