@@ -20,29 +20,63 @@ On some days, the web version may exhibit performance or “threading-like” is
 
 # 📹 Videos
 
-| **Screen Recordings**                                            |
-|------------------------------------------------------------------|
-| **Day01**                                                        |
-| [![Day01](img/aoc-2025-day01.png)](https://youtu.be/tUb6HJIP4LA) |
-| **Day02**                                                        |
-| https://youtu.be/EcsqpXGhUVY                                     |
-| **Day03**                                                        |
-| https://youtu.be/I3R6pfGu6eg                                     |
-| **Day04**                                                        |
-| https://youtu.be/FBO87uTnQMc                                     |
-| **Day05**                                                        |
-| https://youtu.be/d86JZU3shq4                                     |
-| **Day06**                                                        |
-| https://youtu.be/OGaXx32cTIs                                     |
-| **Day07**                                                        |
-| https://youtu.be/3BLwvwXJfRw                                     |
-| **Day08**                                                        |
-| https://youtu.be/lLSCjTU2pL8                                     |
-| **Day09**                                                        |
-| https://youtu.be/mz4HkJZujJE                                     |
-| **Day10**                                                        |
-| https://youtu.be/9vHnEIRsopk                                     |
-
+<table>
+  <thead>
+    <tr>
+      <th colspan="2" style="text-align: center; vertical-align: middle;"><strong>Screen Recordings</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day01</td>
+        <td style="text-align: center; vertical-align: middle;">Day02</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/tUb6HJIP4LA" rel="nofollow"><img src="img/aoc-2025-day01.png" alt="Day01" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/EcsqpXGhUVY" rel="nofollow"><img src="img/aoc-2025-day02.png" alt="Day02" style="max-width: 100%;"></a></td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day03</td>
+        <td style="text-align: center; vertical-align: middle;">Day04</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/I3R6pfGu6eg" rel="nofollow"><img src="img/aoc-2025-day03.png" alt="Day03" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/FBO87uTnQMc" rel="nofollow"><img src="img/aoc-2025-day04.png" alt="Day04" style="max-width: 100%;"></a></td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day05</td>
+        <td style="text-align: center; vertical-align: middle;">Day06</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/d86JZU3shq4" rel="nofollow"><img src="img/aoc-2025-day05.png" alt="Day05" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/OGaXx32cTIs" rel="nofollow"><img src="img/aoc-2025-day06.png" alt="Day06" style="max-width: 100%;"></a></td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day07</td>
+        <td style="text-align: center; vertical-align: middle;">Day08</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/3BLwvwXJfRw" rel="nofollow"><img src="img/aoc-2025-day07.png" alt="Day07" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/lLSCjTU2pL8" rel="nofollow"><img src="img/aoc-2025-day08.png" alt="Day08" style="max-width: 100%;"></a></td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day09</td>
+        <td style="text-align: center; vertical-align: middle;">Day10</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/mz4HkJZujJE" rel="nofollow"><img src="img/aoc-2025-day09.png" alt="Day09" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/9vHnEIRsopk" rel="nofollow"><img src="img/aoc-2025-day10.png" alt="Day10" style="max-width: 100%;"></a></td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;">Day11</td>
+        <td style="text-align: center; vertical-align: middle;">Day12</td>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/mz4HkJZujJE" rel="nofollow"><img src="img/aoc-2025-day11.png" alt="Day11" style="max-width: 100%;"></a></td>
+        <td style="text-align: center; vertical-align: middle;"><a href="https://youtu.be/9vHnEIRsopk" rel="nofollow"><img src="img/aoc-2025-day12.png" alt="Day12" style="max-width: 100%;"></a></td>
+    </tr>
+  </tbody>
+</table>
 
 # 🙌 Credits
 
