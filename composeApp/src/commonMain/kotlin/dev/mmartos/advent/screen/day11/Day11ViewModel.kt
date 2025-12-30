@@ -4,17 +4,21 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.customDelay
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 typealias Graph = PersistentMap<String, PersistentList<String>>
 
@@ -37,30 +41,34 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val sourceNode: String,
         val targetNode: String,
         val visitedGraph: Graph,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val sourceNode: String,
         val targetNode: String,
         val lastGraph: Graph,
         val solution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val sourceNode: String,
         val targetNode: String,
         val middleNodes: PersistentList<String>,
         val visitedGraph: Graph,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val sourceNode: String,
@@ -68,7 +76,7 @@ sealed class SolverStage2 {
         val middleNodes: PersistentList<String>,
         val lastGraph: Graph,
         val solution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day11UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -85,7 +93,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                 val currentNode = line.substringBefore(": ")
                 val outputs = line.substringAfter(": ").split(" ")
                 graph[currentNode] = outputs
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -93,16 +101,16 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                         ),
                     )
                 }
-                delay(5)
+                regularDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         graph = graph.mapValues { (_, v) -> v.toPersistentList() }.toPersistentMap(),
@@ -116,7 +124,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
 
     fun solvePart1() = doSolving {
         var result = 0L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             val sourceNode = "you"
             val targetNode = "out"
             val stack = ArrayDeque<String>()
@@ -132,7 +140,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                     if (output == targetNode) {
                         result++
                         lastGraph = visitedNodes.toGraph(this)
-                        _uiState.threadSafeUpdate {
+                        uiStateUpdater.update {
                             it.copy(
                                 solverStage1 = SolverStage1.Solving(
                                     sourceNode = sourceNode,
@@ -146,10 +154,10 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                         stack.add(output)
                     }
                 }
-                delay(5)
+                regularDelay(DelayReason.Solver)
             }
 
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         sourceNode = sourceNode,
@@ -163,7 +171,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
     }
 
     fun solvePart2() = doSolving {
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             val sourceNode = "svr"
             val targetNode = "out"
             val middleNodes = persistentListOf("fft", "dac")
@@ -194,7 +202,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
             var foundValidHits = 0L
 
             // Initial UI state
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solving(
                         sourceNode = sourceNode,
@@ -205,7 +213,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                     ),
                 )
             }
-            delay(stepDelayMs)
+            customDelay(DelayReason.Solver, stepDelayMs)
 
             while (stack.isNotEmpty()) {
                 val frame = stack.last()
@@ -227,7 +235,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                     if (stack.isNotEmpty()) stack.last().acc += frame.acc
 
                     val partial = cache[root] ?: (stack.firstOrNull()?.acc ?: 0L)
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage2 = SolverStage2.Solving(
                                 sourceNode = sourceNode,
@@ -238,7 +246,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                             ),
                         )
                     }
-                    delay(stepDelayMs)
+                    customDelay(DelayReason.Solver, stepDelayMs)
                     continue
                 }
 
@@ -250,7 +258,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                 // Periodic UI update for intermediate stages (what we're exploring now)
                 lastGraph = visitedNodes.toGraph(this)
                 val partial = cache[root] ?: (stack.firstOrNull()?.acc ?: 0L)
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             sourceNode = sourceNode,
@@ -271,7 +279,7 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                         // More immediate UI update on a valid hit (this is fun to watch)
                         lastGraph = visitedNodes.toGraph(this)
                         val partial = cache[root] ?: (stack.firstOrNull()?.acc ?: 0L)
-                        _uiState.threadSafeUpdate {
+                        uiStateUpdater.update {
                             it.copy(
                                 solverStage2 = SolverStage2.Solving(
                                     sourceNode = sourceNode,
@@ -282,10 +290,10 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                                 ),
                             )
                         }
-                        delay(hitDelayMs)
+                        customDelay(DelayReason.Solver, hitDelayMs)
                     } else {
                         // Still delay a bit so you can see it touch "out" but not count
-                        delay(stepDelayMs)
+                        customDelay(DelayReason.Solver, stepDelayMs)
                     }
                 } else {
                     val child = Key(
@@ -301,13 +309,13 @@ class Day11ViewModel : BaseViewModel<ParserStage, Graph, SolverStage1, SolverSta
                         stack.addLast(Frame(child))
                     }
 
-                    delay(stepDelayMs)
+                    customDelay(DelayReason.Solver, stepDelayMs)
                 }
             }
 
             result = cache[root] ?: 0L
 
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         sourceNode = sourceNode,

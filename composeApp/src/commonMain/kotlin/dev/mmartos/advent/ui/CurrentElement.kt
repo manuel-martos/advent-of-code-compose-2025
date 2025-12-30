@@ -1,5 +1,7 @@
 package dev.mmartos.advent.ui
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -10,8 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.Font
 
 enum class CurrentElementLayout {
     Vertical, Horizontal
@@ -44,7 +47,7 @@ private fun CurrentElementVertical(
         Text(title, style = MaterialTheme.typography.bodyLarge)
         Text(
             text = currentItem,
-            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
             maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,7 +70,7 @@ private fun CurrentElementHorizontal(
         Text(title, style = MaterialTheme.typography.bodyLarge)
         Text(
             text = currentItem,
-            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
             maxLines = 1,
             modifier = Modifier
                 .weight(1f)

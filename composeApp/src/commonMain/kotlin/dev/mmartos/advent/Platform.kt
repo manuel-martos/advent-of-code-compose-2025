@@ -1,7 +1,8 @@
 package dev.mmartos.advent
 
-interface Platform {
-    val name: String
+sealed interface Platform {
+    object Desktop : Platform
+    object Web : Platform
 }
 
 expect fun getPlatform(): Platform

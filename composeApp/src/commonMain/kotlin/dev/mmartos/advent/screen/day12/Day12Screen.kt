@@ -1,6 +1,11 @@
 package dev.mmartos.advent.screen.day12
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.check_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.cross_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +14,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,7 +32,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
@@ -37,13 +42,17 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.ui.SolverSection
 import dev.mmartos.advent.utils.Gradient.colorAt
+import dev.mmartos.advent.utils.leadingZeros
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -163,7 +172,7 @@ private fun ShapesAndRegions(
             itemContent = { (index, shape) ->
                 Text(
                     text = "#${index + 1}: ${shape.points.joinToString { "(${it.x}, ${it.y})" }}",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
                 )
             }
         )
@@ -175,13 +184,9 @@ private fun ShapesAndRegions(
             title = { Text("Regions") },
             itemContent = { (index, region) ->
                 Text(
-                    text = "${
-                        String.format(
-                            "#%04d",
-                            index + 1
-                        )
-                    }: ${region.width}x${region.height} ⇨ ${region.presents.joinToString()}",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                    text = "#${index.leadingZeros(4)}: " +
+                            "${region.width}x${region.height} -> ${region.presents.joinToString()}",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
                     maxLines = 1,
                 )
             }
@@ -195,12 +200,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val region = (solverStage as? SolverStage1.Solving)?.currentRegion
             ?: (solverStage as? SolverStage1.Solved)?.lastRegion
         val layout = (solverStage as? SolverStage1.Solving)?.layout
@@ -291,31 +295,26 @@ private fun PresentsLayout(
                 }
             }
         }
-        Text(
-            text = "${layout.resolveCheck()} ${region.width}x${region.height} ⇨ ${region.presents.joinToString()}",
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace),
-            maxLines = 1,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        Row(
+            horizontalArrangement = spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Image(
+                painter = painterResource(layout.resolveCheck()),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = "${region.width}x${region.height} -> ${region.presents.joinToString()}",
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
 
 private fun Int.resolveShapeBrush(
     shapeSize: Size,
@@ -331,5 +330,5 @@ private fun Int.resolveShapeBrush(
     )
 }
 
-private fun PersistentList<PlacedShape>.resolveCheck(): String =
-    if (isNotEmpty()) "✅" else "\uD83D\uDEA8"
+private fun PersistentList<PlacedShape>.resolveCheck(): DrawableResource =
+    if (isNotEmpty()) Res.drawable.check_mark else Res.drawable.cross_mark

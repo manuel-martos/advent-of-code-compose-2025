@@ -4,14 +4,18 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
 import dev.mmartos.advent.screen.day06.MathOperator.Companion.toMathOperator
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.Delay.shortDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 enum class MathOperator {
     PLUS,
@@ -57,28 +61,32 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val solvedProblems: PersistentList<SolvedProblem>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val solvedProblems: PersistentList<SolvedProblem>,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val solvedProblems: PersistentList<SolvedProblem>,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val solvedProblems: PersistentList<SolvedProblem>,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day06UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -113,23 +121,23 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
                 )
             }.forEach {
                 problems.add(it)
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             partialProblems = problems.toPersistentList(),
                         ),
                     )
                 }
-                delay(2L)
+                shortDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         problems = problems.toPersistentList(),
@@ -144,7 +152,7 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
     fun solvePart1() = doSolving {
         var result = 0L
         val solvedProblems = mutableListOf<SolvedProblem>()
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             forEach { problem ->
                 val curValues = problem.values.map { it.trim().toLong() }
                 val solution = when (problem.operator) {
@@ -158,7 +166,7 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
                     )
                 )
                 result += solution
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage1 = SolverStage1.Solving(
                             solvedProblems = solvedProblems.toPersistentList(),
@@ -166,10 +174,10 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
                         )
                     )
                 }
-                delay(5L)
+                regularDelay(DelayReason.Solver)
             }
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage1 = SolverStage1.Solved(
                     solvedProblems = solvedProblems.toPersistentList(),
@@ -182,7 +190,7 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
     fun solvePart2() = doSolving {
         var result = 0L
         val solvedProblems = mutableListOf<SolvedProblem>()
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             forEach { problem ->
                 val curValues = (0 until problem.cols).map { col ->
                     (0 until problem.rows).map { row -> problem.values[row][col] }.joinToString("").trim().toLong()
@@ -198,7 +206,7 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
                     )
                 )
                 result += solution
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             solvedProblems = solvedProblems.toPersistentList(),
@@ -206,10 +214,10 @@ class Day06ViewModel : BaseViewModel<ParserStage, List<Problem>, SolverStage1, S
                         )
                     )
                 }
-                delay(5L)
+                regularDelay(DelayReason.Solver)
             }
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage2 = SolverStage2.Solved(
                     solvedProblems = solvedProblems.toPersistentList(),

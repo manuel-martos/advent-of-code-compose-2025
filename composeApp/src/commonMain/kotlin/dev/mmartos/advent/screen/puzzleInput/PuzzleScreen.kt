@@ -1,5 +1,7 @@
 package dev.mmartos.advent.screen.puzzleInput
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,7 @@ import dev.mmartos.advent.ui.TopBar
 import dev.mmartos.advent.ui.TopContainer
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import org.jetbrains.compose.resources.Font
 
 sealed interface PuzzleKey : NavKey {
     data object PuzzleInputKey : PuzzleKey
@@ -200,7 +202,7 @@ private fun PuzzleInput(
             TextField(
                 value = puzzleInput,
                 onValueChange = { puzzleInput = it },
-                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
                 modifier = Modifier
                     .fillMaxSize()
                     .horizontalScroll(rememberScrollState())

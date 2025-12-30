@@ -1,5 +1,7 @@
 package dev.mmartos.advent.screen.day08
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.animation.core.withInfiniteAnimationFrameMillis
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -13,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -25,7 +26,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
 import dev.mmartos.advent.screen.day08.Vec3.Companion.times
@@ -35,9 +36,10 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.ui.SolverSection
+import dev.mmartos.advent.utils.leadingSpaces
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -45,6 +47,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.isActive
+import org.jetbrains.compose.resources.Font
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -161,8 +164,8 @@ private fun JunctionBoxes(
         title = { Text("Junction Boxes") },
         itemContent = {
             Text(
-                text = "[${String.format("%5d", it.x)}, ${String.format("%5d", it.y)}, ${String.format("%5d", it.z)}]",
-                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                text = "[${it.x.leadingSpaces(5)}, ${it.y.leadingSpaces(5)}, ${it.z.leadingSpaces(5)}]",
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
                 maxLines = 1,
             )
         }
@@ -175,12 +178,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val junctionBoxes = (solverStage as? SolverStage1.Solving)?.junctionBoxes
             ?: (solverStage as? SolverStage1.Solved)?.junctionBoxes
         val circuits = (solverStage as? SolverStage1.Solving)?.circuits
@@ -209,22 +211,6 @@ private fun Solver1Section(
         )
     }
 }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
 
 data class Vec3(val x: Float, val y: Float, val z: Float) {
     operator fun plus(o: Vec3) = Vec3(x + o.x, y + o.y, z + o.z)
@@ -427,12 +413,11 @@ private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val junctionBoxes = (solverStage as? SolverStage2.Solving)?.junctionBoxes
             ?: (solverStage as? SolverStage2.Solved)?.junctionBoxes
         val circuits = (solverStage as? SolverStage2.Solving)?.circuits
@@ -462,17 +447,3 @@ private fun Solver2Section(
     }
 }
 
-@Composable
-@ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
-    }
-
-@Composable
-private fun SolverStage2.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage2.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage2.Solved -> Color(0xff98fb98)
-    }

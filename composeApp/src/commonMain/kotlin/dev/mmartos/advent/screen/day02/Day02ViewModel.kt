@@ -4,15 +4,18 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.longDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlin.math.ceil
 import kotlin.math.log10
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 sealed class ParserStage : BaseParserStage {
     data class Parsing(
@@ -27,26 +30,30 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val currentRange: LongRange,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val currentRange: LongRange,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day02UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -65,7 +72,7 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                     val values = item.split("-")
                     val productIDRange = values.first().toLong()..values.last().toLong()
                     productIDRanges += productIDRange
-                    _uiState.update {
+                    uiStateUpdater.update {
                         it.copy(
                             parserStage = ParserStage.Parsing(
                                 currentItem = item,
@@ -73,16 +80,16 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                             )
                         )
                     }
-                    delay(10)
+                    longDelay(DelayReason.Parser)
                 }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         productIDRanges = productIDRanges.toPersistentList(),
@@ -105,7 +112,7 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                     val split2 = text.substring(length / 2)
                     if (split1 == split2) {
                         result += cur
-                        _uiState.threadSafeUpdate {
+                        uiStateUpdater.update {
                             it.copy(
                                 solverStage1 = SolverStage1.Solving(
                                     currentRange = currentRange,
@@ -116,9 +123,9 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                     }
                 }
             }
-            delay(10)
+            longDelay(DelayReason.Solver)
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage1 = SolverStage1.Solved(
                     solution = result.toString(),
@@ -141,7 +148,7 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                     }
                 if (isInvalid) {
                     result += cur
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage2 = SolverStage2.Solving(
                                 currentRange = currentRange,
@@ -151,9 +158,9 @@ class Day02ViewModel : BaseViewModel<ParserStage, List<LongRange>, SolverStage1,
                     }
                 }
             }
-            delay(10)
+            longDelay(DelayReason.Solver)
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage2 = SolverStage2.Solved(
                     solution = result.toString(),

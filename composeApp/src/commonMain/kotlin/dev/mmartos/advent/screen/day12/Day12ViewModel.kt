@@ -4,15 +4,19 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
+import dev.mmartos.advent.utils.Delay.longDelay
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.DelayReason
 import dev.mmartos.advent.utils.Point2D
-import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class Shape(
     val points: List<Point2D>,
@@ -49,18 +53,20 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val currentRegion: Region,
         val layout: PersistentList<PlacedShape>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val lastRegion: Region,
         val lastLayout: PersistentList<PlacedShape>,
         val solution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
 typealias Day12UiState = UiState<ParserStage, SolverStage1, Nothing>
@@ -82,7 +88,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
             while (i < input.size) {
                 val line = input[i]
                 if (line.isBlank()) {
-                    _uiState.update {
+                    uiStateUpdater.update {
                         it.copy(
                             parserStage = ParserStage.Parsing(
                                 currentLine = line,
@@ -91,7 +97,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                             ),
                         )
                     }
-                    delay(5)
+                    regularDelay(DelayReason.Parser)
                     i++; continue
                 }
 
@@ -110,7 +116,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                         )
                     )
                     i++
-                    _uiState.update {
+                    uiStateUpdater.update {
                         it.copy(
                             parserStage = ParserStage.Parsing(
                                 currentLine = line,
@@ -119,7 +125,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                             ),
                         )
                     }
-                    delay(5)
+                    regularDelay(DelayReason.Parser)
                     continue
                 }
 
@@ -134,7 +140,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                             // Stop if next shape header or region line (defensive)
                             if (Regex("""^\d+:$""").matches(r) || Regex("""^\d+x\d+:.*$""").matches(r)) break
                             rows.add(r)
-                            _uiState.update {
+                            uiStateUpdater.update {
                                 it.copy(
                                     parserStage = ParserStage.Parsing(
                                         currentLine = r,
@@ -143,7 +149,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                                     ),
                                 )
                             }
-                            delay(5)
+                            regularDelay(DelayReason.Parser)
                             i++
                         }
                         val grid = Array(3) { r ->
@@ -152,7 +158,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                         }
 
                         shapes.add(Shape(grid.toSinglePolygon()))
-                        _uiState.update {
+                        uiStateUpdater.update {
                             it.copy(
                                 parserStage = ParserStage.Parsing(
                                     currentLine = line,
@@ -161,7 +167,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                                 ),
                             )
                         }
-                        delay(5)
+                        regularDelay(DelayReason.Parser)
                         continue
                     }
                 }
@@ -170,13 +176,13 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                 i++
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         challenge = Challenge(
@@ -192,7 +198,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
 
     fun solvePart1() = doSolving {
         var result = 0L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             var lastRegion = regions.first()
             var lastLayout = persistentListOf<PlacedShape>()
             regions.forEach { region ->
@@ -203,7 +209,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                 val isFeasible = presents <= squares
                 if (isFeasible) {
                     result++
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         val allPlacedPresents = buildList {
                             region.presents.forEachIndexed { index, presents ->
                                 repeat(presents) {
@@ -228,7 +234,7 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                         )
                     }
                 } else {
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage1 = SolverStage1.Solving(
                                 currentRegion = region,
@@ -238,9 +244,9 @@ class Day12ViewModel : BaseViewModel<ParserStage, Challenge, SolverStage1, Nothi
                         )
                     }
                 }
-                delay(10)
+                longDelay(DelayReason.Solver)
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         lastRegion = lastRegion,

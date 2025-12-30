@@ -4,13 +4,17 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.longDelay
+import dev.mmartos.advent.utils.Delay.tinyDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class SolvedBatteriesBank(
     val batteriesBank: String,
@@ -33,30 +37,34 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val partialSolvedBatteriesBank: SolvedBatteriesBank?,
         val solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val partialSolvedBatteriesBank: SolvedBatteriesBank?,
         val solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val solvedBatteriesBanks: PersistentList<SolvedBatteriesBank>,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day03UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -71,7 +79,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
         runCatching {
             input.forEach { line ->
                 batteriesBanks += line
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -79,16 +87,16 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                         )
                     )
                 }
-                delay(10)
+                longDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         batteriesBanks = batteriesBanks.toPersistentList(),
@@ -103,7 +111,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
     fun solvePart1() = doSolving {
         var result = 0L
         val solvedBatteriesBanks = mutableListOf<SolvedBatteriesBank>()
-        _uiState.value.parsedData?.forEach { batteriesBank ->
+        uiState.value.parsedData?.forEach { batteriesBank ->
             val selectedBatteries = calcSelectedBatteries(
                 batteriesBank = batteriesBank,
                 maxBatteries = 2
@@ -112,7 +120,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                     batteriesBank = batteriesBank,
                     selectedBatteries = partialSolution
                 )
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage1 = SolverStage1.Solving(
                             partialSolvedBatteriesBank = partialSolvedBatteriesBank,
@@ -121,7 +129,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                         )
                     )
                 }
-                delay(1)
+                tinyDelay(DelayReason.Solver)
             }
             val solvedBatteriesBank = SolvedBatteriesBank(
                 batteriesBank = batteriesBank,
@@ -129,7 +137,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
             )
             solvedBatteriesBanks.add(solvedBatteriesBank)
             result += solvedBatteriesBank.toJoltage()
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solving(
                         partialSolvedBatteriesBank = null,
@@ -139,7 +147,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                 )
             }
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage1 = SolverStage1.Solved(
                     solvedBatteriesBanks = solvedBatteriesBanks.toPersistentList(),
@@ -152,7 +160,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
     fun solvePart2() = doSolving {
         var result = 0L
         val solvedBatteriesBanks = mutableListOf<SolvedBatteriesBank>()
-        _uiState.value.parsedData?.forEach { batteriesBank ->
+        uiState.value.parsedData?.forEach { batteriesBank ->
             val selectedBatteries = calcSelectedBatteries(
                 batteriesBank = batteriesBank,
                 maxBatteries = 12
@@ -161,7 +169,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                     batteriesBank = batteriesBank,
                     selectedBatteries = partialSolution
                 )
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             partialSolvedBatteriesBank = partialSolvedBatteriesBank,
@@ -170,7 +178,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                         )
                     )
                 }
-                delay(1)
+                tinyDelay(DelayReason.Solver)
             }
             val solvedBatteriesBank = SolvedBatteriesBank(
                 batteriesBank = batteriesBank,
@@ -178,7 +186,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
             )
             solvedBatteriesBanks.add(solvedBatteriesBank)
             result += solvedBatteriesBank.toJoltage()
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solving(
                         partialSolvedBatteriesBank = null,
@@ -188,7 +196,7 @@ class Day03ViewModel : BaseViewModel<ParserStage, List<String>, SolverStage1, So
                 )
             }
         }
-        _uiState.threadSafeUpdate {
+        uiStateUpdater.update {
             it.copy(
                 solverStage2 = SolverStage2.Solved(
                     solvedBatteriesBanks = solvedBatteriesBanks.toPersistentList(),

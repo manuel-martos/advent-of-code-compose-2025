@@ -1,5 +1,9 @@
 package dev.mmartos.advent.ui
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.check_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.cross_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.right_arrow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,11 +41,22 @@ fun <PS1 : ParsingStage, PS2 : ParserStage> ParserSection(
 
 @Composable
 @ReadOnlyComposable
-private fun ParserStage.resolveSectionTitle(): String =
+private fun ParserStage.resolveSectionTitle(): Title =
     when {
-        isParsing() -> "➡\uFE0F Parsing"
-        isParsed() -> "✅ Parsed"
-        else -> "\uD83D\uDEA8 Error"
+        isParsing() -> Title(
+            icon = Res.drawable.right_arrow,
+            text = "Parsing"
+        )
+
+        isParsed() -> Title(
+            icon = Res.drawable.check_mark,
+            text = "Parsed"
+        )
+
+        else -> Title(
+            icon = Res.drawable.cross_mark,
+            text = "Error"
+        )
     }
 
 @Composable

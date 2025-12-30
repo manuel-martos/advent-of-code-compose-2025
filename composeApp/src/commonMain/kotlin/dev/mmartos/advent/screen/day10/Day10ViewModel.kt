@@ -1,22 +1,28 @@
 package dev.mmartos.advent.screen.day10
 
+import dev.mmartos.advent.Platform
 import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
-import java.util.ArrayDeque
-import java.util.StringTokenizer
+import dev.mmartos.advent.getPlatform
+import dev.mmartos.advent.utils.Delay.customDelay
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToLong
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class Machine(
     val id: Int,
@@ -72,34 +78,38 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val currentMachine: Machine,
         val currentState: Int,
         val currentButtonIndex: Int?,
         val machineReady: Boolean,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val lastMachine: Machine,
         val solution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val currentMachine: Machine,
         val currentJoltages: PersistentList<Int>,
         val currentButtonIndex: Int?,
         val machineReady: Boolean,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val lastMachine: Machine,
         val solution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day10UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -112,9 +122,9 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
     fun startParser(input: List<String>) = doParsing {
         val machines = mutableListOf<Machine>()
         runCatching {
-            val patternRegex = Regex("\\[([.#]+)]")
+            val patternRegex = Regex("\\[([.#]+)\\]")
             val buttonRegex = Regex("\\(([^)]*)\\)")
-            val joltageRegex = Regex("\\{([^}]*)}")
+            val joltageRegex = Regex("\\{([^}]*)\\}")
             input.forEachIndexed { index, line ->
                 val patternMatch = patternRegex.find(line)!!
                 val pattern = patternMatch.groupValues[1]
@@ -146,15 +156,17 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                 // Parse target: {a,b,c,...}
                 val jMatch = joltageRegex.find(line)!!
                 val jStr = jMatch.groupValues[1]
-                val tok = StringTokenizer(jStr, ",")
-                val targetList = mutableListOf<Int>()
-                while (tok.hasMoreTokens()) {
-                    targetList += tok.nextToken().trim().toInt()
-                }
+                val targetList = jStr
+                    .split(',')
+                    .asSequence()
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .map { it.toInt() }
+                    .toList()
 
                 machines.add(
                     Machine(
-                        id = index + 1,
+                        id = index,
                         nLights = nLights,
                         nButtons = buttonMasks.size,
                         target = patternMatch.groupValues[1],
@@ -163,7 +175,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                         joltage = targetList.toPersistentList(),
                     )
                 )
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -171,16 +183,17 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                         ),
                     )
                 }
-                delay(5)
+                regularDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            println(it)
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         machines = machines.toPersistentList(),
@@ -195,12 +208,12 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
     fun solvePart1() = doSolving {
         var result = 0
         var currentDelay = 1500L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             var lastMachine: Machine = first()
             forEachIndexed { index, machine ->
                 val path = machine.solveMachineWithStates()
                 val initialState = path.states.first()
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage1 = SolverStage1.Solving(
                             currentMachine = machine,
@@ -211,10 +224,10 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                         ),
                     )
                 }
-                delay(currentDelay)
+                customDelay(DelayReason.Solver, currentDelay)
 
                 path.steps.forEach { step ->
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         result++
                         it.copy(
                             solverStage1 = SolverStage1.Solving(
@@ -226,13 +239,13 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                             ),
                         )
                     }
-                    delay(currentDelay)
+                    customDelay(DelayReason.Solver, currentDelay)
                 }
 
                 currentDelay = if (index < 12) (currentDelay * 0.75).toLong() else currentDelay
                 lastMachine = machine
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         lastMachine = lastMachine,
@@ -295,17 +308,17 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
     fun solvePart2() = doSolving {
         var result = 0
         var currentDelay = 1500L
-        _uiState.value.parsedData?.run {
-            val solutions = map { machine ->
-                async {
-                    machine.solveMachineWithVectors()
-                }
-            }
+        uiState.value.parsedData?.run {
+//            val solutions = map { machine ->
+//                async(Dispatchers.Default) {
+//                    machine.solveMachineWithVectors()
+//                }
+//            }
             var lastMachine: Machine = first()
             forEachIndexed { index, machine ->
-                val path = solutions[index].await()
+                val path = getSolution(index, this@doSolving)
                 val currentState = path.states.first()
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             currentMachine = machine,
@@ -316,7 +329,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                         ),
                     )
                 }
-                delay(currentDelay)
+                customDelay(DelayReason.Solver, currentDelay)
                 path.steps.forEachIndexed { index, step ->
                     repeat(step.times) { curTime ->
                         val isReady = index == path.steps.indices.last && curTime == step.times - 1
@@ -326,7 +339,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                             }
                         }
                         result++
-                        _uiState.threadSafeUpdate {
+                        uiStateUpdater.update {
                             it.copy(
                                 solverStage2 = SolverStage2.Solving(
                                     currentMachine = machine,
@@ -337,8 +350,8 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                                 ),
                             )
                         }
-                        delay((0.7f * currentDelay).roundToLong())
-                        _uiState.threadSafeUpdate {
+                        customDelay(DelayReason.Solver, (0.7f * currentDelay).roundToLong())
+                        uiStateUpdater.update {
                             it.copy(
                                 solverStage2 = SolverStage2.Solving(
                                     currentMachine = machine,
@@ -349,13 +362,13 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
                                 ),
                             )
                         }
-                        delay((0.3f * currentDelay).roundToLong())
+                        customDelay(DelayReason.Solver, (0.3f * currentDelay).roundToLong())
                         currentDelay = if (result < 22) (currentDelay * 0.75).toLong() else currentDelay
                     }
                 }
                 lastMachine = machine
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         lastMachine = lastMachine,
@@ -419,7 +432,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
         val states = ArrayList<IntArray>()
         val steps = ArrayList<PathStep>()
         val state = IntArray(joltages) { 0 }
-        states.add(state.clone()) // initial
+        states.add(state.copyOf()) // initial
 
         for ((origIdx, times) in actionsOriginal) {
             val mask = this.buttonMasks[origIdx]
@@ -427,7 +440,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
             for (t in 0 until times) {
                 for (i in 0 until joltages) if ((mask and (1 shl i)) != 0) state[i]++
             }
-            val snapshot = state.clone()
+            val snapshot = state.copyOf()
             steps.add(PathStep(buttonIndex = origIdx, times = times, stateAfter = snapshot.toList()))
             states.add(snapshot)
         }
@@ -455,7 +468,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
         masksSorted: IntArray
     ): PropResult? {
         var active = activeStart
-        val rem = remStart.clone()
+        val rem = remStart.copyOf()
         val forced = ArrayList<Pair<Int, Int>>()
         var forcedCost = 0
 
@@ -572,7 +585,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
 
         var bestRest = INF
         for (presses in maxK downTo minK) {
-            val remNext = rem.toIntArray().clone()
+            val remNext = rem.toIntArray().copyOf()
             if (presses > 0) {
                 for (c in 0 until joltages) if ((bm and (1 shl c)) != 0) remNext[c] -= presses
             }
@@ -657,7 +670,7 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
         val maxK = min(capBranch, need)
 
         for (presses in maxK downTo minK) {
-            val remNext = rem.toIntArray().clone()
+            val remNext = rem.toIntArray().copyOf()
             if (presses > 0) for (c in 0 until joltages) if ((bm and (1 shl c)) != 0) remNext[c] -= presses
 
             val subCost =
@@ -681,6 +694,23 @@ class Day10ViewModel : BaseViewModel<ParserStage, PersistentList<Machine>, Solve
 
         return actions
     }
+
+    private suspend fun List<Machine>.getSolution(index: Int, coroutineScope: CoroutineScope): SolutionPath {
+        if (getPlatform() == Platform.Desktop) {
+            if (solutions.isEmpty()) {
+                solutions = map { machine ->
+                    coroutineScope.async {
+                        machine.solveMachineWithVectors()
+                    }
+                }
+            }
+            return solutions[index].await()
+        } else {
+            return get(index).solveMachineWithVectors()
+        }
+    }
+
+    private var solutions: List<Deferred<SolutionPath>> = mutableListOf()
 
     private companion object {
         private const val INF = 1_000_000_000

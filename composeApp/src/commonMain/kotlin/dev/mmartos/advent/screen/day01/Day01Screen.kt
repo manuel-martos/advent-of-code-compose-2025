@@ -1,7 +1,12 @@
 package dev.mmartos.advent.screen.day01
 
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.check_mark
+import advent_of_code_compose_2025.composeapp.generated.resources.right_arrow
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -12,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,14 +33,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import dev.mmartos.advent.models.DayDetails
@@ -45,10 +52,13 @@ import dev.mmartos.advent.ui.CurrentElement
 import dev.mmartos.advent.ui.CurrentElementLayout
 import dev.mmartos.advent.ui.DayScaffold
 import dev.mmartos.advent.ui.ParserSection
-import dev.mmartos.advent.ui.SectionContainer
 import dev.mmartos.advent.ui.Solution
 import dev.mmartos.advent.ui.SolutionLayout
+import dev.mmartos.advent.ui.SolverSection
+import dev.mmartos.advent.ui.Title
 import kotlinx.collections.immutable.PersistentList
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -164,10 +174,21 @@ private fun DialMovements(
         modifier = modifier,
         title = { Text("Dial Movements:") },
         itemContent = { item ->
-            Text(
-                text = item.toString(),
-                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
-            )
+            Row(
+                horizontalArrangement = spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(item.direction.toDrawable()),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(Color.White),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "${item.steps}",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()),
+                )
+            }
         }
     )
 }
@@ -177,12 +198,11 @@ private fun Solver1Section(
     solverStage: SolverStage1,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val markerPosition = remember { Animatable(50f) }
         val currentDialMovement = (solverStage as? SolverStage1.Solving)?.currentDialMovement
         val currentDialerState = (solverStage as? SolverStage1.Solving)?.currentDialerState
@@ -229,31 +249,15 @@ private fun Solver1Section(
 }
 
 @Composable
-@ReadOnlyComposable
-private fun SolverStage1.resolveSectionTitle(): String =
-    when (this) {
-        is SolverStage1.Solving -> "➡\uFE0F Part 1 - Solving"
-        is SolverStage1.Solved -> "✅ Part 1 - Solved"
-    }
-
-@Composable
-private fun SolverStage1.resolveSectionOutlineColor(): Color =
-    when (this) {
-        is SolverStage1.Solving -> MaterialTheme.colorScheme.outline
-        is SolverStage1.Solved -> Color(0xff98fb98)
-    }
-
-@Composable
 private fun Solver2Section(
     solverStage: SolverStage2,
     modifier: Modifier = Modifier,
 ) {
-    SectionContainer(
-        title = solverStage.resolveSectionTitle(),
-        outline = solverStage.resolveSectionOutlineColor(),
+    SolverSection(
+        solverStage = solverStage,
         modifier = modifier
             .fillMaxSize(),
-    ) {
+    ) { solverStage ->
         val markerPosition = remember { Animatable(50f) }
         val currentDialMovement = (solverStage as? SolverStage2.Solving)?.currentDialMovement
         val currentDialerState = (solverStage as? SolverStage2.Solving)?.currentDialerState
@@ -301,10 +305,17 @@ private fun Solver2Section(
 
 @Composable
 @ReadOnlyComposable
-private fun SolverStage2.resolveSectionTitle(): String =
+private fun SolverStage2.resolveSectionTitle(): Title =
     when (this) {
-        is SolverStage2.Solving -> "➡\uFE0F Part 2 - Solving"
-        is SolverStage2.Solved -> "✅ Part 2 - Solved"
+        is SolverStage2.Solving -> Title(
+            icon = Res.drawable.right_arrow,
+            text = "Part 2 - Solving"
+        )
+
+        is SolverStage2.Solved -> Title(
+            icon = Res.drawable.check_mark,
+            text = "Part 2 - Solved"
+        )
     }
 
 @Composable
@@ -467,23 +478,23 @@ private fun DialMovement(
         )
         Row(
             horizontalArrangement = spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .width(160.dp)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest, shape = MaterialTheme.shapes.medium)
                 .padding(8.dp)
         ) {
-            Text(
-                text = dialMovement.direction.toEmoji(),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    color = Color.White,
-                    fontFamily = FontFamily.Monospace
-                ),
+            Image(
+                painter = painterResource(dialMovement.direction.toDrawable()),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(Color.White),
+                modifier = Modifier.size(24.dp),
             )
             Text(
                 text = dialMovement.steps.toString(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = Color.White,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily()
                 ),
             )
         }

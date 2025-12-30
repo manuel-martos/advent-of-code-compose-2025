@@ -4,18 +4,21 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.Delay.tinyDelay
+import dev.mmartos.advent.utils.DelayReason
 import dev.mmartos.advent.utils.Point2D
-import dev.mmartos.advent.utils.delayNanos
-import dev.mmartos.advent.utils.threadSafeUpdate
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class Locations(
     val points: PersistentList<Point2D>,
@@ -45,32 +48,36 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val locations: Locations,
         val currentRect: RedTilesRect,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val locations: Locations,
         val solution: String,
         val largestRect: RedTilesRect,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val locations: Locations,
         val currentRect: RedTilesRect,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val locations: Locations,
         val solution: String,
         val largestRect: RedTilesRect,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day09UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -85,7 +92,7 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
         runCatching {
             input.forEach { line ->
                 locations.add(line.parse())
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -93,16 +100,16 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                         ),
                     )
                 }
-                delay(5)
+                regularDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 val min = locations.reduce { acc, d -> Point2D(min(acc.x, d.x), min(acc.y, d.y)) }
                 val max = locations.reduce { acc, d -> Point2D(max(acc.x, d.x), max(acc.y, d.y)) }
                 val middle = Point2D(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2)
@@ -126,13 +133,13 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
     fun solvePart1() = doSolving {
         var result = 0L
         var largestRect: RedTilesRect? = null
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             points.flatMap { a ->
                 points.map { b ->
                     val width = abs(a.x - b.x) + 1L
                     val height = abs(a.y - b.y) + 1L
                     val area = width * height
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         val currentRect = RedTilesRect(
                             start = a,
                             end = b,
@@ -152,11 +159,11 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                             )
                         )
                     }
-                    delayNanos(10000)
+                    tinyDelay(DelayReason.Solver)
                 }
             }
 
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         locations = this,
@@ -171,7 +178,7 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
     fun solvePart2() = doSolving {
         var result = 0L
         var largestRect: RedTilesRect? = null
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             val lines = (points + points.first()).windowed(2).map { it[0] to it[1] }
             for (a in points) {
                 for (b in points - a) {
@@ -223,7 +230,7 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                         height = height,
                         area = area,
                     )
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage2 = SolverStage2.Solving(
                                 locations = this,
@@ -232,13 +239,13 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                             )
                         )
                     }
-                    delayNanos(10000)
+                    tinyDelay(DelayReason.Solver)
                     if (isCrossing) continue
                     result = area
                     largestRect = currentRect
                 }
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         locations = this,

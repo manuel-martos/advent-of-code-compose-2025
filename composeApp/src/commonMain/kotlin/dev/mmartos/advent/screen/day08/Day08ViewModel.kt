@@ -4,22 +4,23 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
-import kotlin.collections.buildMap
-import kotlin.collections.mutableMapOf
+import dev.mmartos.advent.utils.Delay.regularDelay
+import dev.mmartos.advent.utils.Delay.shortDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
-import kotlin.text.toLong
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class Point3D<T : Number>(
     val x: T,
@@ -66,32 +67,36 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val junctionBoxes: JunctionBoxes,
         val circuits: PersistentMap<Point3D<Long>, PersistentList<Point3D<Long>>>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val junctionBoxes: JunctionBoxes,
         val circuits: PersistentMap<Point3D<Long>, PersistentList<Point3D<Long>>>,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val junctionBoxes: JunctionBoxes,
         val circuits: PersistentMap<Point3D<Long>, PersistentList<Point3D<Long>>>,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val junctionBoxes: JunctionBoxes,
         val circuits: PersistentMap<Point3D<Long>, PersistentList<Point3D<Long>>>,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day08UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -106,7 +111,7 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
         runCatching {
             input.forEachIndexed { index, line ->
                 boxes.add(line.parse())
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -114,16 +119,16 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                         ),
                     )
                 }
-                delay(5)
+                regularDelay(DelayReason.Parser)
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         junctionBoxes = JunctionBoxes(
@@ -161,9 +166,9 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
     }
 
     fun solvePart1() = doSolving {
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             // Provide initial solution before sorting boxes
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solving(
                         junctionBoxes = this,
@@ -193,7 +198,7 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                         circuits[inCircuit] = (circuits[inCircuit] ?: setOf(inCircuit)) + circuitOfA
                     }
                 }
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage1 = SolverStage1.Solving(
                             junctionBoxes = this,
@@ -202,13 +207,13 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                         )
                     )
                 }
-                delay(2)
+                shortDelay(DelayReason.Solver)
 
                 connectionsLeft--
                 if (connectionsLeft == 0) break
             }
 
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         junctionBoxes = this,
@@ -222,9 +227,9 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
 
     fun solvePart2() = doSolving {
         var result = 0L
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             // Provide initial solution before sorting boxes
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solving(
                         junctionBoxes = this,
@@ -254,7 +259,7 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                     }
                 }
                 result = boxA.x * boxB.x
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             junctionBoxes = this,
@@ -268,11 +273,11 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
                         )
                     )
                 }
-                delay(2)
+                shortDelay(DelayReason.Solver)
                 if (circuits[boxA]!!.size == boxes.size) break
             }
 
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         junctionBoxes = this,
@@ -295,7 +300,8 @@ class Day08ViewModel : BaseViewModel<ParserStage, JunctionBoxes, SolverStage1, S
     }
 
     private fun Map<Point3D<Long>, List<Point3D<Long>>>.calcResult(): Long {
-        val top = asSequence().map { it.value.toSet() }.distinct().map { it.size.toLong() }.sortedDescending().take(3).toList()
+        val top = asSequence().map { it.value.toSet() }.distinct().map { it.size.toLong() }.sortedDescending().take(3)
+            .toList()
         if (top.size < 3) return 0
         return top[0] * top[1] * top[2]
     }

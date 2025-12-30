@@ -4,13 +4,18 @@ import dev.mmartos.advent.common.BaseViewModel
 import dev.mmartos.advent.common.ErrorStage
 import dev.mmartos.advent.common.ParsedStage
 import dev.mmartos.advent.common.ParsingStage
+import dev.mmartos.advent.common.SolvedStage
+import dev.mmartos.advent.common.SolverPart
+import dev.mmartos.advent.common.SolvingStage
 import dev.mmartos.advent.common.UiState
-import dev.mmartos.advent.utils.threadSafeUpdate
+import dev.mmartos.advent.utils.Delay.extraLongDelay
+import dev.mmartos.advent.utils.Delay.longDelay
+import dev.mmartos.advent.utils.Delay.tinyDelay
+import dev.mmartos.advent.utils.DelayReason
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
 import dev.mmartos.advent.common.ParserStage as BaseParserStage
+import dev.mmartos.advent.common.SolverStage as BaseSolverStage
 
 data class PaperRollMap(
     val cols: Int,
@@ -55,30 +60,34 @@ sealed class ParserStage : BaseParserStage {
     data object Error : ParserStage(), ErrorStage
 }
 
-sealed class SolverStage1 {
+sealed class SolverStage1 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_1
+
     data class Solving(
         val paperRollMap: PaperRollMap,
         val validCells: PersistentList<Pair<Int, Int>>,
         val partialSolution: String,
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvingStage
 
     data class Solved(
         val paperRollMap: PaperRollMap,
         val validCells: PersistentList<Pair<Int, Int>>,
         val solution: String
-    ) : SolverStage1()
+    ) : SolverStage1(), SolvedStage
 }
 
-sealed class SolverStage2 {
+sealed class SolverStage2 : BaseSolverStage {
+    override fun solverPart(): SolverPart = SolverPart.SOLVER_PART_2
+
     data class Solving(
         val paperRollMap: PaperRollMap,
         val partialSolution: String,
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvingStage
 
     data class Solved(
         val paperRollMap: PaperRollMap,
         val solution: String
-    ) : SolverStage2()
+    ) : SolverStage2(), SolvedStage
 }
 
 typealias Day04UiState = UiState<ParserStage, SolverStage1, SolverStage2>
@@ -93,7 +102,7 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
         runCatching {
             input.forEach { line ->
                 content += line.toCharArray()
-                _uiState.update {
+                uiStateUpdater.update {
                     it.copy(
                         parserStage = ParserStage.Parsing(
                             currentLine = line,
@@ -105,19 +114,19 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                         ),
                     )
                 }
-                delay(10)
+                longDelay(DelayReason.Parser)
             }
             if (!content.isValid()) {
                 error("Invalid input")
             }
         }.onFailure {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Error,
                 )
             }
         }.onSuccess {
-            _uiState.update {
+            uiStateUpdater.update {
                 it.copy(
                     parserStage = ParserStage.Parsed(
                         PaperRollMap(
@@ -129,20 +138,20 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                 )
             }
             solvePart1()
-            solvePart2()
+//            solvePart2()
         }
     }
 
     fun solvePart1() = doSolving {
         val validCells = mutableListOf<Pair<Int, Int>>()
-        _uiState.value.parsedData?.run {
+        uiState.value.parsedData?.run {
             content.indices.forEach { row ->
                 content[row].indices.forEach { col ->
                     val currentCell = row to col
                     if (content[row][col] == '@' && countAdjacent(row, col, '@') < 4) {
                         validCells.add(currentCell)
                     }
-                    _uiState.threadSafeUpdate {
+                    uiStateUpdater.update {
                         it.copy(
                             solverStage1 = SolverStage1.Solving(
                                 paperRollMap = this,
@@ -152,9 +161,9 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                         )
                     }
                 }
-                delay(1)
+                tinyDelay(DelayReason.Solver)
             }
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage1 = SolverStage1.Solved(
                         paperRollMap = this,
@@ -169,8 +178,8 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
     fun solvePart2() = doSolving {
         var result = 0
         val validCells = mutableListOf<Pair<Int, Int>>()
-        _uiState.value.parsedData?.copy(
-            content = _uiState.value.parsedData?.content?.map { it.clone() }?.toPersistentList()!!
+        uiState.value.parsedData?.copy(
+            content = uiState.value.parsedData?.content?.map { it.copyOf() }?.toPersistentList()!!
         )?.run {
             do {
                 validCells.clear()
@@ -186,7 +195,7 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                     updateCell(it.first, it.second, '.')
                 }
                 result += validCells.size
-                _uiState.threadSafeUpdate {
+                uiStateUpdater.update {
                     it.copy(
                         solverStage2 = SolverStage2.Solving(
                             paperRollMap = this,
@@ -194,9 +203,9 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                         )
                     )
                 }
-                delay(20)
+                extraLongDelay(DelayReason.Solver)
             } while (validCells.isNotEmpty())
-            _uiState.threadSafeUpdate {
+            uiStateUpdater.update {
                 it.copy(
                     solverStage2 = SolverStage2.Solved(
                         paperRollMap = this,

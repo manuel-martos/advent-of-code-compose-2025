@@ -1,25 +1,24 @@
 package dev.mmartos.advent.ui
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
+import advent_of_code_compose_2025.composeapp.generated.resources.Res
+import advent_of_code_compose_2025.composeapp.generated.resources.source_code_pro_regular
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dev.mmartos.advent.theme.AoCTheme
+import org.jetbrains.compose.resources.Font
 
 enum class SolutionLayout {
     Vertical, Horizontal
@@ -100,7 +99,7 @@ private fun SolutionContent(
         text = solution,
         style = solutionTextStyle.copy(
             color = Color.White,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = Font(Res.font.source_code_pro_regular).toFontFamily(),
             textAlign = TextAlign.Center,
         ),
         modifier = modifier
@@ -112,52 +111,3 @@ private fun SolutionContent(
 
 private fun Boolean.resolve(): String =
     if (this) "Current Solution:" else "Final Solution:"
-
-@Composable
-@Preview
-private fun SolutionVerticalPreview() {
-    AoCTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
-            ) {
-                Solution(
-                    solution = "123412341234",
-                    partial = false,
-                    layout = SolutionLayout.Vertical,
-                )
-                Solution(
-                    solution = "123412341234",
-                    partial = true,
-                    layout = SolutionLayout.Vertical,
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-@Preview
-private fun SolutionHorizontalPreview() {
-    AoCTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = spacedBy(16.dp, Alignment.CenterVertically),
-            ) {
-                Solution(
-                    solution = "123412341234",
-                    partial = false,
-                    layout = SolutionLayout.Horizontal,
-                )
-                Solution(
-                    solution = "123412341234",
-                    partial = true,
-                    layout = SolutionLayout.Horizontal,
-                )
-            }
-        }
-    }
-}
