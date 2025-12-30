@@ -138,7 +138,7 @@ class Day04ViewModel : BaseViewModel<ParserStage, PaperRollMap, SolverStage1, So
                 )
             }
             solvePart1()
-//            solvePart2()
+            solvePart2()
         }
     }
 

@@ -16,12 +16,6 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("ExplicitBackingFields")

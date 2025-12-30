@@ -159,7 +159,7 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                             )
                         )
                     }
-                    tinyDelay(DelayReason.Solver)
+//                    tinyDelay(DelayReason.Solver)
                 }
             }
 
@@ -239,7 +239,7 @@ class Day09ViewModel : BaseViewModel<ParserStage, Locations, SolverStage1, Solve
                             )
                         )
                     }
-                    tinyDelay(DelayReason.Solver)
+//                    tinyDelay(DelayReason.Solver)
                     if (isCrossing) continue
                     result = area
                     largestRect = currentRect
