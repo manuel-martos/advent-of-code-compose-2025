@@ -20,28 +20,28 @@ On some days, the web version may exhibit performance or “threading-like” is
 
 # 📹 Videos
 
-| **Screen Recordings**                                                                |
-|--------------------------------------------------------------------------------------|
-| **Day01**                                                                            |
-| [![Day01](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://youtu.be/tUb6HJIP4LA)  |
-| **Day02**                                                                            |
-| https://youtu.be/EcsqpXGhUVY                                                         |
-| **Day03**                                                                            |
-| https://youtu.be/I3R6pfGu6eg                                                         |
-| **Day04**                                                                            |
-| https://youtu.be/FBO87uTnQMc                                                         |
-| **Day05**                                                                            |
-| https://youtu.be/d86JZU3shq4                                                         |
-| **Day06**                                                                            |
-| https://youtu.be/OGaXx32cTIs                                                         |
-| **Day07**                                                                            |
-| https://youtu.be/3BLwvwXJfRw                                                         |
-| **Day08**                                                                            |
-| https://youtu.be/lLSCjTU2pL8                                                         |
-| **Day09**                                                                            |
-| https://youtu.be/mz4HkJZujJE                                                         |
-| **Day10**                                                                            |
-| https://youtu.be/9vHnEIRsopk                                                         |
+| **Screen Recordings**                                    |
+|----------------------------------------------------------|
+| **Day01**                                                |
+| [![Day01](img/day01.png)](https://youtu.be/tUb6HJIP4LA)  |
+| **Day02**                                                |
+| https://youtu.be/EcsqpXGhUVY                             |
+| **Day03**                                                |
+| https://youtu.be/I3R6pfGu6eg                             |
+| **Day04**                                                |
+| https://youtu.be/FBO87uTnQMc                             |
+| **Day05**                                                |
+| https://youtu.be/d86JZU3shq4                             |
+| **Day06**                                                |
+| https://youtu.be/OGaXx32cTIs                             |
+| **Day07**                                                |
+| https://youtu.be/3BLwvwXJfRw                             |
+| **Day08**                                                |
+| https://youtu.be/lLSCjTU2pL8                             |
+| **Day09**                                                |
+| https://youtu.be/mz4HkJZujJE                             |
+| **Day10**                                                |
+| https://youtu.be/9vHnEIRsopk                             |
 
 
 # 🙌 Credits
